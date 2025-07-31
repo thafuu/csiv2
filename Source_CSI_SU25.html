@@ -1,0 +1,2345 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ôn tập Trắc nghiệm CSI SU25</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .quiz-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .quiz-header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .quiz-header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .score-summary {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-number {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .score-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .quiz-content {
+            padding: 40px;
+        }
+
+        .question-item {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .question-item.answered {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+
+        .question-item.incorrect {
+            border-color: #dc3545;
+            background: #fff8f8;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .question-number {
+            background: #667eea;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .question-status {
+            font-size: 1.2em;
+        }
+
+        .question-text {
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            color: #333;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+
+        .options-container {
+            margin-bottom: 15px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            background: white;
+            margin: 8px 0;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .option-item:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .option-item.selected {
+            border-color: #667eea;
+            background: #e3f2fd;
+        }
+
+        .option-item.correct {
+            border-color: #28a745;
+            background: #d4edda;
+            color: #155724;
+            font-weight: bold;
+        }
+
+        .option-item.incorrect {
+            border-color: #dc3545;
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .option-item.user-selected {
+            border-color: #007bff;
+            background: #cce7ff;
+            font-weight: bold;
+        }
+
+        .option-item.user-incorrect {
+            border-color: #dc3545;
+            background: #f8d7da;
+            color: #721c24;
+            text-decoration: line-through;
+        }
+
+        .answer-indicator {
+            margin-left: 10px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .correct-indicator {
+            color: #28a745;
+        }
+
+        .incorrect-indicator {
+            color: #dc3545;
+        }
+
+        .explanation {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .explanation.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .explanation h4 {
+            color: #856404;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            font-size: 1em;
+        }
+
+        .explanation p {
+            color: #533f04;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .action-buttons {
+            background: white;
+            padding: 20px 40px;
+            border-top: 2px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .icon {
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="quiz-header">
+            <h1>Ôn tập Trắc nghiệm CSI SU25</h1>
+            <p>Tổng hợp 202 câu hỏi trắc nghiệm từ Source CSI SU25.txt</p>
+            <div class="score-summary">
+                <div class="score-item">
+                    <div class="score-number" id="totalQuestions">0</div>
+                    <div class="score-label">Tổng câu</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-number" id="answeredCount">0</div>
+                    <div class="score-label">Đã trả lời</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-number" id="correctCount">0</div>
+                    <div class="score-label">Đúng</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-number" id="scorePercentage">0%</div>
+                    <div class="score-label">Điểm số</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="quiz-content" id="quizContent">
+            <!-- Questions are dynamically inserted here by JavaScript -->
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-secondary" onclick="resetQuiz()">
+                🔄 Làm lại toàn bộ
+            </button>
+            <div>
+                <button class="btn btn-primary" onclick="showAllAnswers()">
+                    👁️ Hiện tất cả đáp án
+                </button>
+                <button class="btn btn-success" onclick="checkAllAnswers()">
+                    ✅ Kiểm tra kết quả
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                id: 1,
+                question: "__who exploit the internet systems only to make public certain vast datasets of information that would be of benefit to everyone.",
+                options: ["Black Hat Hacker", "Grey Hat Hacker", "Red Hat Hacker", "Blue Hat Hacker"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Grey Hat Hacker"
+            },
+            {
+                id: 2,
+                question: "The main principles of ethics are",
+                options: ["Moral rules, social contract, ultilization", "Ethical decision, social justice, procedural justice", "Beneficence, procedural justice, fidelity", "Nonmaleficence, social justice, fidelity"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Ethical decision, social justice, procedural justice"
+            },
+            {
+                id: 3,
+                question: "The term ____ computing or ____ architectures refers to linking a number of CPUs to work on a task simultaneously.",
+                options: ["parallel", "sequential", "serial", "monolithic"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. parallel"
+            },
+            {
+                id: 4,
+                question: "A(n) ____ network consists of computers that independently decide how to channel to the next computer.",
+                options: ["concentrated", "distributed", "monolithic", "centralized"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. distributed"
+            },
+            {
+                id: 5,
+                question: "Which of the following tools specializes in sophisticated page layout?",
+                options: ["project scheduler", "desktop publisher", "text editor", "spreadsheet"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. desktop publisher"
+            },
+            {
+                id: 6,
+                question: "When you are diagramming and creating flowcharts, you are principally engaged in ____ tasks.",
+                options: ["programming", "office", "Web", "network repair"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. programming"
+            },
+            {
+                id: 7,
+                question: "In addition to redundant areas, ____ compression techniques eliminate information not perceptible to the human eye.",
+                options: ["lossless", "primary", "lossy", "secondary"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. lossy"
+            },
+            {
+                id: 8,
+                question: "The 16.7 million color palette of the BMP format requires ____ bits.",
+                options: ["16", "20", "24", "32"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. 24"
+            },
+            {
+                id: 9,
+                question: "Data ____ can be used to reduce the size of a file and speed the transmission of the file through e-mail.",
+                options: ["collaboration", "design", "inlining", "compression"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. compression"
+            },
+            {
+                id: 10,
+                question: "____ in the form of logos, cartoons, and maps play a large part in the world of information sharing.",
+                options: ["Texts", "Graphics", "Databases", "Protocols"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Graphics"
+            },
+            {
+                id: 11,
+                question: "Text editors, compilers, and debuggers are directly featured on the menu of which of the following software tools?",
+                options: ["Integrated Development Environment", "word processor", "spreadsheet", "desktop publisher"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Integrated Development Environment"
+            },
+            {
+                id: 12,
+                question: "File ____ Protocol (or FTP) is a transmission method used to send files across the Internet.",
+                options: ["Task", "Test", "Transfer", "Table"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Transfer"
+            },
+            {
+                id: 13,
+                question: "The ____ extension is one of the more popular compression formats in the world of Windows.",
+                options: [".bat", ".car", ".zip", ".exe"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. .zip"
+            },
+            {
+                id: 14,
+                question: "A ____ tool is the most logical choice for the development of a slide show.",
+                options: ["spreadsheet", "presentation", "word processing", "scheduling"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. presentation"
+            },
+            {
+                id: 15,
+                question: "A grid-like document that facilitates arithmetic manipulation and presentation is called a ____.",
+                options: ["resume", "fax", "memo", "spreadsheet"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. spreadsheet"
+            },
+            {
+                id: 16,
+                question: "A ____ is a generic tool that allows you to do basic editing, although the finished document won't have a professional look.",
+                options: ["word processor", "text editor", "GUI", "spreadsheet"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. text editor"
+            },
+            {
+                id: 17,
+                question: "UML or Universal ____ Language diagrams are used to develop object-oriented systems and programs.",
+                options: ["Modeling", "Markup", "Master", "Middling"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Modeling"
+            },
+            {
+                id: 18,
+                question: "When the ciphertext is received the receiver must transform the ciphertext back into the plaintext-this is",
+                options: ["Plain text", "Cipher text", "Encryption", "Decryption"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. Decryption"
+            },
+            {
+                id: 19,
+                question: "A ______ is a collection of data stored in the internal format of the computer. This contains data that is meaningful only if it is properly interpreted by a program.",
+                options: ["Text file", "Binary file", "Sequential file", "EOF"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Binary file"
+            },
+            {
+                id: 20,
+                question: "In a three-level DBMS architecture, the layer that interacts directly with the hardware is the ______ level.",
+                options: ["External", "Conceptual", "Internal", "Physical"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. Physical"
+            },
+            {
+                id: 21,
+                question: "What is the analysis process in the system implementation phase that will use a program as an active agent that manipulates passive object?",
+                options: ["Procedure-oriented analysis", "Structured analysis", "Classical analysis", "All of others"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Procedure-oriented analysis"
+            },
+            {
+                id: 22,
+                question: "______ are provided by most operating systems for organizing files. This performs the same function as a folder in a filing cabinet.",
+                options: ["Operating system", "Files", "Binary files", "Directories"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. Directories"
+            },
+            {
+                id: 23,
+                question: "______ is an English-language-like representation of an algorithm. There is no standard for it—some people use a lot of detail.",
+                options: ["Pseudocode", "Unified Modeling Language (UML)", "Flowchart", "State diagram"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Pseudocode"
+            },
+            {
+                id: 24,
+                question: "A(n) ______ list is also known as a queue.",
+                options: ["LIFO", "FIFO", "Unordered", "Ordered"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. FIFO"
+            },
+            {
+                id: 25,
+                question: "______ is a method in which each statement in the software is executed at least once.",
+                options: ["Basis path testing", "Condition testing", "Loop testing", "Boundary testing"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Basis path testing"
+            },
+            {
+                id: 26,
+                question: "In the ______ hashing method, the key is divided by the file size, and the address is the remainder plus 1.",
+                options: ["Direct", "Division remainder", "Modulo division", "Digit extraction"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Division remainder"
+            },
+            {
+                id: 27,
+                question: "______ is a basic algorithm in which we want to find the location of a target in a list of items.",
+                options: ["Sorting", "Searching", "Product", "Summation"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Searching"
+            },
+            {
+                id: 28,
+                question: "Inside the ADT are two different parts of the model that are ______ and ______.",
+                options: ["Data structure and operations", "Application program and public operations", "Application program and private operations", "Data structure and application program"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Data structure and operations"
+            },
+            {
+                id: 29,
+                question: "Time during which a job is processed by the computer is ______.",
+                options: ["Delay time", "Real time", "Execution time", "Down time", "None of the others"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Execution time"
+            },
+            {
+                id: 30,
+                question: "Pascal is a(n) ______ language.",
+                options: ["Procedural", "Functional", "Declarative", "Object-oriented"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Procedural"
+            },
+            {
+                id: 31,
+                question: "One phase in system development is ______.",
+                options: ["Analysis", "Application", "Designing", "Collecting"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Analysis"
+            },
+            {
+                id: 32,
+                question: "A ______ is a collection of related elements possibly of different types having a single name.",
+                options: ["Array", "Record", "Linked list", "Tree"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Record"
+            },
+            {
+                id: 33,
+                question: "Which data of the following cannot change value with time?",
+                options: ["Constants", "Literals", "Input/output", "Variables"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Constants"
+            },
+            {
+                id: 34,
+                question: "The ______ of each node includes one of its children and all descendents of that child.",
+                options: ["Left tree", "Binary tree", "Subtree", "Right tree"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Subtree"
+            },
+            {
+                id: 35,
+                question: "In the software quality, what factor measures can be mentioned for maintainability?",
+                options: ["Accuracy", "Timeliness", "Reusability", "Changeability"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. Changeability"
+            },
+            {
+                id: 36,
+                question: "Before insertion into a linked list we first apply the searching algorithm because we DO NOT ______.",
+                options: ["Allow insertion into an empty list", "Allow insertion in the middle of the list", "Allow insertion at the beginning of the list", "Allow data with duplicate values"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. Allow data with duplicate values"
+            },
+            {
+                id: 37,
+                question: "Prolog is an example of a(n) ______ language.",
+                options: ["Procedural", "Functional", "Declarative", "Object-oriented"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Declarative"
+            },
+            {
+                id: 38,
+                question: "An array that consists of just rows and columns is a ______ array.",
+                options: ["One-dimensional", "Two-dimensional", "Three-dimensional", "Multidimensional"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Two-dimensional"
+            },
+            {
+                id: 39,
+                question: "The ______ construct handles repeated actions.",
+                options: ["Sequence", "Decision", "Repetition", "Flow"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Repetition"
+            },
+            {
+                id: 40,
+                question: "______ between modules in a software system must be minimized.",
+                options: ["Coupling", "Cohesion", "Neither coupling nor cohesion", "Both coupling and cohesion"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Coupling"
+            },
+            {
+                id: 41,
+                question: "Which of the following operating systems supports multitasking?",
+                options: ["Windows XP", "CP/M", "MS-DOS", "Apple II"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Windows XP"
+            },
+            {
+                id: 42,
+                question: "Which of the following is a primary function of an operating system?",
+                options: ["managing resources", "generating documents", "generating flowcharts", "solving differential equations"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. managing resources"
+            },
+            {
+                id: 43,
+                question: "Console operating systems prompt users to interact through a(n) ____ line.",
+                options: ["operational", "flow", "programming", "command"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. command"
+            },
+            {
+                id: 44,
+                question: "A program that is currently executing is called a ____.",
+                options: ["code segment", "process", "JCL", "regular routine"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. process"
+            },
+            {
+                id: 45,
+                question: "Which of the following operating systems was designed to accommodate multiple users and multiple tasks?",
+                options: ["DOS", "CP/M", "UNIX", "Windows 3.0"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. UNIX"
+            },
+            {
+                id: 46,
+                question: "An 8-nibble word is more likely to be referred to as the equivalent ____-byte word.",
+                options: ["2", "4", "8", "16"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. 4"
+            },
+            {
+                id: 47,
+                question: "Each hexadecimal digit relates directly to a ____-bit binary pattern.",
+                options: ["2", "4", "8", "16"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. 4"
+            },
+            {
+                id: 48,
+                question: "Which of the following methods represents the most common way of storing signed numbers?",
+                options: ["one's complement", "binary complement", "integer complement", "two's complement"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. two's complement"
+            },
+            {
+                id: 49,
+                question: "To find the ____ of a given bit, flip it to the opposite state.",
+                options: ["root", "complement", "position", "sign"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. complement"
+            },
+            {
+                id: 50,
+                question: "In scientific notation, the method of displaying numbers uses a(n) ____ and an exponent.",
+                options: ["mantissa", "asymptote", "abscissa", "ordinate"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. mantissa"
+            },
+            {
+                id: 51,
+                question: "The eight bit extended ASCII (American Standard Code for Information Interchange) character set can be used to represent ____ characters.",
+                options: ["128", "256", "512", "34,168"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. 256"
+            },
+            {
+                id: 52,
+                question: "A ____ is the smallest unit that can be displayed on a computer monitor.",
+                options: ["micron", "picon", "twip", "pixel"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. pixel"
+            },
+            {
+                id: 53,
+                question: "____ patterns contain information about the color and brightness of a pixel.",
+                options: ["Binary", "Octal", "Decimal", "Hexadecimal"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Binary"
+            },
+            {
+                id: 54,
+                question: "Unicode character representation uses a(n) ____ bit standard.",
+                options: ["4", "7", "8", "16"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. 16"
+            },
+            {
+                id: 55,
+                question: "Various ____ techniques have been designed to allow the same image information to be stored in a smaller file.",
+                options: ["consolidation", "compression", "scanning", "resolution"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. compression"
+            },
+            {
+                id: 56,
+                question: "A sound consists of a waveform that has amplitude (volume) and a ____ (pitch).",
+                options: ["frequency", "phase shift", "phase angle", "period"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. frequency"
+            },
+            {
+                id: 57,
+                question: "The computer samples sound at fixed intervals and each sample is assigned a binary value according to its ____.",
+                options: ["frequency", "period", "amplitude", "pitch"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. amplitude"
+            },
+            {
+                id: 58,
+                question: "Which of the following is an example of a video compression format?",
+                options: ["BMP", "GIF", "MPEG", "TIF"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. MPEG"
+            },
+            {
+                id: 59,
+                question: "According to general consensus, which of the following companies won the mainframe battle of the first electronic computer generation?",
+                options: ["IBM", "Remington Rand", "Honeywell", "RCA"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. IBM"
+            },
+            {
+                id: 60,
+                question: "Using the Berners-Lee protocols, Marc Andreesen created the browser that had the most impact beyond the walls of academia: ____.",
+                options: ["Internet Explorer", "Next", "Mosaic", "Impact"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Mosaic"
+            },
+            {
+                id: 61,
+                question: "ENIAC was a functioning and useful computer that could perform both arithmetic and ____ operations.",
+                options: ["standard", "surgical", "linguistic", "logical"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. logical"
+            },
+            {
+                id: 62,
+                question: "Which of the following technologies made electronic computing possible?",
+                options: ["reusable pins", "punch cards", "vacuum tubes", "keyboards"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. vacuum tubes"
+            },
+            {
+                id: 63,
+                question: "The loose collection of networks called \"the Internet\" is the short form of which of the following words?",
+                options: ["internetwork", "internexus", "interarpanet", "interconnect"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. internetwork"
+            },
+            {
+                id: 64,
+                question: "All the instructions and procedures needed to start up a computer, to the point it can load an operating system, are stored in ROM chips. In IBM compatible PCs this is called the ______.",
+                options: ["RAM BIOS", "ROM BIOS", "EPROM", "POST", "None of the others"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. ROM BIOS"
+            },
+            {
+                id: 65,
+                question: "The ______ scheduler creates a process from a job and changes a process back to a job.",
+                options: ["Job", "Process", "Virtual", "Queue"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Job"
+            },
+            {
+                id: 66,
+                question: "What generation appeared high-level programming language?",
+                options: ["First generation", "Second generation", "Third generation", "Fourth generation"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Third generation"
+            },
+            {
+                id: 67,
+                question: "In the storing audio, if the signal is changing rapidly, we need more samples. It has been shown that a ______ of 40000 samples per second is good enough to reproduce an audio signal.",
+                options: ["Quantization", "Sampling rate", "Encoding", "Bit depth"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Sampling rate"
+            },
+            {
+                id: 68,
+                question: "A mechanism for arranging controlled access to a shared resource is",
+                options: ["Retrieving", "Sorting", "Balleting", "Lock-out", "None of the others"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. Lock-out"
+            },
+            {
+                id: 69,
+                question: "The result of the decode step is the ______ for some operation that the system will perform.",
+                options: ["Output", "Data processing", "Binary code", "Code"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. Code"
+            },
+            {
+                id: 70,
+                question: "The physic-layer addresses, sometimes called ______, are locally defined addresses, each of which defines a specific host or router in a network (LAN or WAN).",
+                options: ["TCP", "Port numbers", "MAC addresses", "IP address"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. MAC addresses"
+            },
+            {
+                id: 71,
+                question: "Instead of using a numeric address, what unique address can we use to connect a host to the Internet in TCP/IP protocol?",
+                options: ["DNS", "Port number", "MAC addresses", "IP address"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. IP address"
+            },
+            {
+                id: 72,
+                question: "A group includes ______ bits in the binary system are represented as one digit in the hexadecimal system.",
+                options: ["1", "2", "3", "4", "None of the others"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. 4"
+            },
+            {
+                id: 73,
+                question: "Which of the following is the user programmed semiconductor memory?",
+                options: ["SRAM", "DRAM", "EPROM", "All of the others", "None of the others"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. EPROM"
+            },
+            {
+                id: 74,
+                question: "EBCDIC can code up to how many different characters?",
+                options: ["8", "16", "32", "64", "256"],
+                correct: 4,
+                type: "single",
+                explanation: "Đáp án đúng là **E**. 256"
+            },
+            {
+                id: 75,
+                question: "IBM-PC is an example of",
+                options: ["A main frame", "Machine-in-built", "Micro computer", "Special purpose", "None of the others"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Micro computer"
+            },
+            {
+                id: 76,
+                question: "In ______ paradigm, the service provider is an application program, it runs continuously, waiting for another application program, then to make a connection through the Internet and ask for service.",
+                options: ["P2P", "Traditional", "Client-server", "Model"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Client-server"
+            },
+            {
+                id: 77,
+                question: "Use a simple left shift operation on the bit pattern 1001 1000",
+                options: ["0001 1001", "0001 1010", "0011 0000", "0011 0001"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. 0011 0000"
+            },
+            {
+                id: 78,
+                question: "The binary equivalent of the Octal number 13.54 is",
+                options: ["1011.1011", "1101.1110", "1001.1110", "All of the others", "None of the others"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. 1101.1110"
+            },
+            {
+                id: 79,
+                question: "In peripheral device management, what is the principle of hierarchical work on OS of third-generation computers?",
+                options: ["Processor - Peripheral device - Control device", "Processor - Control device - Peripheral device", "Control device - Peripheral device - Processor", "None of the answers are correct"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Processor - Control device - Peripheral device"
+            },
+            {
+                id: 80,
+                question: "Which of the following representations is erroneous?",
+                options: ["(111)2", "(346)8", "(EEG)16", "221"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. (EEG)16"
+            },
+            {
+                id: 81,
+                question: "At the transport layer, TCP groups a number of bytes together into a packet called a ______.",
+                options: ["Frame", "Bit pattern", "Segment", "Packet"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Segment"
+            },
+            {
+                id: 82,
+                question: "The maximum value of a binary integer with K digits. For example, if K = 5, then the maximum value is ______?",
+                options: ["30", "31", "32", "33"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. 31"
+            },
+            {
+                id: 83,
+                question: "A number which is stored and processed but not in the standard exponential form is called",
+                options: ["Floating point number", "Fixed point number", "Octal number", "Decimal number", "None of the others"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Floating point number"
+            },
+            {
+                id: 84,
+                question: "Images are stored in computers using ______ techniques?",
+                options: ["Raster graphics and bit map", "Vector graphics and bit map", "True-color and raster graphics", "Index-color and vector graphics", "Bit map"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Raster graphics and bit map"
+            },
+            {
+                id: 85,
+                question: "In two's complement representation with a 4-bit allocation, we get ______ when we add 5 to 5.",
+                options: ["-5", "-6", "-7", "10"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. -6"
+            },
+            {
+                id: 86,
+                question: "______ is usually privately owned, limited in size and connects some hosts in a single office, building, or campus.",
+                options: ["LAN", "WAN", "Internet", "Network"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. LAN"
+            },
+            {
+                id: 87,
+                question: "Which of the following is the user programmed semiconductor memory?",
+                options: ["SRAM", "DRAM", "EPROM", "All of the others"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. EPROM"
+            },
+            {
+                id: 88,
+                question: "The ASCII code for the character J is",
+                options: ["1001 0001", "1001 1010", "0100 1010", "1010 0001"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. 0100 1010"
+            },
+            {
+                id: 89,
+                question: "IBM-PC is an example of",
+                options: ["Main frame", "Machine-in-built", "Micro computer", "Special purpose"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Micro computer"
+            },
+            {
+                id: 90,
+                question: "Conversion of binary number 1010101000010111 to hexadecimal number is",
+                options: ["D8F9", "A8B9", "AA17", "D9F8"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. AA17"
+            },
+            {
+                id: 91,
+                question: "Instructions and memory addresses are represented by",
+                options: ["Character codes", "Binary codes", "Binary word", "Parity bit"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Binary codes"
+            },
+            {
+                id: 92,
+                question: "Which of the following holds data and processing instructions temporarily until the CPU needs it?",
+                options: ["ROM", "Control unit", "Main memory", "Coprocessor chips"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Main memory"
+            },
+            {
+                id: 93,
+                question: "Use an arithmetic right shift operation on the bit pattern 1001 1000",
+                options: ["0100 1100", "1100 1100", "1101 1001", "1001 1000"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. 1100 1100"
+            },
+            {
+                id: 94,
+                question: "After the instruction is decoded, the control unit sends the task order to a component in the CPU. What is this phase?",
+                options: ["Fetch phase", "Decode phase", "Execute phase", "None of the others"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Execute phase"
+            },
+            {
+                id: 95,
+                question: "Which of the following is equivalent to 12 in decimal?",
+                options: ["(1110)₂", "(C)₁₆", "(15)₈", "None of the others"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. (C)₁₆"
+            },
+            {
+                id: 96,
+                question: "What is the result of storing -25 in an 8-bit memory location using two's complement representation?",
+                options: ["00011001", "00110010", "11100111", "11110010"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. 11100111"
+            },
+            {
+                id: 97,
+                question: "A group contains bits in the binary system are represented as one digit in the octal system.",
+                options: ["1", "2", "3", "4"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. 3"
+            },
+            {
+                id: 98,
+                question: "A 17th-century computing machine that could perform addition and subtraction was the",
+                options: ["Pascaline", "Jacquard loom", "Analytical Engine", "Babbage machine"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Pascaline"
+            },
+            {
+                id: 99,
+                question: "RAM is used as a short memory because it is",
+                options: ["Volatile", "Has small capacity", "Is very expensive", "Is programmable"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Volatile"
+            },
+            {
+                id: 100,
+                question: "To calculate bit rate (R), given bit depth per sample B and number of samples per second S, what is the formula?",
+                options: ["B × 2S", "2B × S", "B × S", "B² × S²"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. B × S"
+            },
+            {
+                id: 101,
+                question: "A binary operator is applied to ______ relations(s) and creates an output of ______ relation(s).",
+                options: ["One, one", "One, two", "Two, one", "Two, two"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Two, one"
+            },
+            {
+                id: 102,
+                question: "Each column in a relation is called ______.",
+                options: ["An attribute", "A tuple", "A union", "An attitude"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. An attribute"
+            },
+            {
+                id: 103,
+                question: "An empty linked list consists of ______.",
+                options: ["A node", "Two nodes", "Data and a link", "A null head pointer"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. A null head pointer"
+            },
+            {
+                id: 104,
+                question: "The push operation ______ of the stack.",
+                options: ["Deletes an item from the top", "Deletes an item from the bottom", "Inserts an item at the top", "Inserts an item at the bottom"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Inserts an item at the top"
+            },
+            {
+                id: 105,
+                question: "Sending a virus to a computer is called an ______ attack.",
+                options: ["Penetration", "Denial of service", "Either a or b", "Neither a nor b"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Penetration"
+            },
+            {
+                id: 106,
+                question: "In a computer, the ______ subsystem stores data and programs.",
+                options: ["ALU", "Input/output", "Memory", "Control unit"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Memory"
+            },
+            {
+                id: 107,
+                question: "The ______ level of a three-level DBMS architecture defines the logical view of the data.",
+                options: ["External", "Conceptual", "Internal", "Physical"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Conceptual"
+            },
+            {
+                id: 108,
+                question: "A database management system (DBMS) is a combination of ______ components.",
+                options: ["2", "3", "4", "5"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. 4"
+            },
+            {
+                id: 109,
+                question: "If the transaction file key is 20 and the first master file key is 25, then we ______.",
+                options: ["Add the new record to the new master file", "Revise the contents of the old master file", "Delete the data", "Write the old master file record to the new master file"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Add the new record to the new master file"
+            },
+            {
+                id: 110,
+                question: "A(n) ______ is a suitable structure when a small number of insertions and deletions are required but a lot of searching and retrieval is needed.",
+                options: ["Array", "Record", "Linked list", "Tree"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Array"
+            },
+            {
+                id: 111,
+                question: "In an inorder traversal of a binary tree, the root is processed ______.",
+                options: ["First", "Second", "Last", "Two times"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Second"
+            },
+            {
+                id: 112,
+                question: "When a sequential file is updated, the ______ file gets the actual update.",
+                options: ["New master", "Old master", "Transaction", "Error report"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. New master"
+            },
+            {
+                id: 113,
+                question: "A polyalphabetic cipher is where the relationship between a character in the plaintext to a character in the ciphertext is ______.",
+                options: ["One-to-one", "One-to-many", "Many-to-one", "None of the others"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. One-to-many"
+            },
+            {
+                id: 114,
+                question: "The queue operation: \"queue (queueName)\" is used to ______.",
+                options: ["Delete queue", "Check status of queue", "Create an empty queue", "Insert queue"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Create an empty queue"
+            },
+            {
+                id: 115,
+                question: "In the ______ collision resolution method, we try to put data that cannot be placed in location 123 into location 124.",
+                options: ["Open addressing", "Linked list", "Bucket hashing", "Random hashing"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Open addressing"
+            },
+            {
+                id: 116,
+                question: "Each element in a record is called ______.",
+                options: ["A variable", "An index", "A field", "A node"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. A field"
+            },
+            {
+                id: 117,
+                question: "In the relational database model, data is organized in ______ called relations.",
+                options: ["Two-dimensional array", "Two-dimensional tables", "Two-dimensional record", "None of others"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Two-dimensional tables"
+            },
+            {
+                id: 118,
+                question: "The ethical principle that dictates that a decision should be made according to the universally accepted principles of morality is referred to as ______.",
+                options: ["Moral rules", "Utilization", "Social contract", "None of the others"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Social contract"
+            },
+            {
+                id: 119,
+                question: "______ cryptography is often used for short messages.",
+                options: ["Symmetric-key", "Asymmetric-key", "Secret-key", "Open-key"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Symmetric-key"
+            },
+            {
+                id: 120,
+                question: "In the attacks threatening integrity with ______ attack, the attacker modifies the information to make it beneficial to them.",
+                options: ["Snooping", "Repudiation", "Denial of service", "Traffic analysis"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Repudiation"
+            },
+            {
+                id: 121,
+                question: "In the physical layer, an ___ has infinitely many levels of intensity over a period of time.",
+                options: ["Analog signals", "Electromagnetic signals", "Digital signals", "Electronic signals"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Analog signals"
+            },
+            {
+                id: 122,
+                question: "The ___ of each node includes one of its children and all descendents of that child.",
+                options: ["Left tree", "Binary tree", "Subtree", "Right tree"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Subtree"
+            },
+            {
+                id: 123,
+                question: "In the sign-and-magnitude representation, the memory location can hold four bits. Assume that we have stored integer 6 in a memory location and then try to add 6 to it. The computer’s response is ___?",
+                options: ["12", "-12", "4", "-4"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. -4"
+            },
+            {
+                id: 124,
+                question: "FORTRAN and COBOL are examples of _______.",
+                options: ["hardware", "operating systems", "computer languages", "algorithms"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. computer languages"
+            },
+            {
+                id: 125,
+                question: "The ___ is a protocol used to define how client-server programs retrieve web pages from the Web.",
+                options: ["FTP", "SMTP", "TELNET", "HTTP"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. HTTP"
+            },
+            {
+                id: 126,
+                question: "Artificial Intelligence has evolved in all fields except for ___.",
+                options: ["Web mining", "Construction of plans in real-time dynamic systems", "Understanding natural language robustly", "All of the above", "None of the above"],
+                correct: 4,
+                type: "single",
+                explanation: "Đáp án đúng là **E**. None of the above"
+            },
+            {
+                id: 127,
+                question: "A program used in the development, repair, or enhancement of other programs is known as ___.",
+                options: ["System software", "Software tool", "Applications program", "Utility program", "None of the others"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Software tool"
+            },
+            {
+                id: 128,
+                question: "Which of the following represents a set of data items that share a specific relationship?",
+                options: ["ADT", "Data structure", "Programming language", "Data element"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Data structure"
+            },
+            {
+                id: 129,
+                question: "How many digits are in the decimal number 234 (in base 10)?",
+                options: ["1", "2", "3", "4"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. 3"
+            },
+            {
+                id: 130,
+                question: "___ means that the sender and receiver expect confidentiality.",
+                options: ["Nonrepudiation", "Integrity", "Authentication", "Encryption and decryption"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. Encryption and decryption"
+            },
+            {
+                id: 131,
+                question: "A ___ is a predetermined value used in a program and it may change value with time.",
+                options: ["Constants", "Literals", "Input/output", "Variables"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. Variables"
+            },
+            {
+                id: 132,
+                question: "___ separated the programming task from computer operation tasks.",
+                options: ["Algorithms", "Data processors", "High-level programming languages", "Operating systems"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. High-level programming languages"
+            },
+            {
+                id: 133,
+                question: "What is the method in black-box testing that a subset of values in the input domain is selected for testing?",
+                options: ["Boundary-value testing", "Random testing", "Exhaustive testing", "Data flow testing"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Random testing"
+            },
+            {
+                id: 134,
+                question: "A 17th-century computing machine that could perform addition and subtraction was the _______.",
+                options: ["Pascaline", "Jacquard loom", "Analytical Engine", "Babbage machine"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Pascaline"
+            },
+            {
+                id: 135,
+                question: "The ___ manager is responsible for archiving and backup.",
+                options: ["Memory", "Process", "Device", "File"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. File"
+            },
+            {
+                id: 136,
+                question: "___ can provide authentication, integrity, and nonrepudiation for a message.",
+                options: ["Encryption/decryption", "Digital signature", "Compression", "Key-exchange"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Digital signature"
+            },
+            {
+                id: 137,
+                question: "The items are divided into two lists (sorted and unsorted) ___ sort.",
+                options: ["Only in a selection", "Only in a bubble", "Only in an insertion", "In selection, bubble, or insertion"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. In selection, bubble, or insertion"
+            },
+            {
+                id: 138,
+                question: "The file structure that allows random access is:",
+                options: ["Hashed file", "Sequential file", "EOF", "None of others"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Hashed file"
+            },
+            {
+                id: 139,
+                question: "If A is the first data element input into a queue, followed by B, C, and D, then ___ is the first data to be removed.",
+                options: ["A", "B", "C", "D"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. A"
+            },
+            {
+                id: 140,
+                question: "___ refers to a process that rounds the value of a sample to the closest integer value.",
+                options: ["Quantization", "Sampled", "Decoded", "Coded"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Quantization"
+            },
+            {
+                id: 141,
+                question: "The format of an IPv4 address is referred to as ___",
+                options: ["Dotted-binary notation", "Dotted-octal notation", "Dotted-decimal notation", "Dotted-hexadecimal notation"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Dotted-decimal notation"
+            },
+            {
+                id: 142,
+                question: "A control bus with eight wires can define ___ operations.",
+                options: ["8", "16", "256", "512"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. 256"
+            },
+            {
+                id: 143,
+                question: "Convert the binary number (110.11)₂ to decimal.",
+                options: ["6.7", "7.75", "6.75", "27"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. 6.75"
+            },
+            {
+                id: 144,
+                question: "A (n) ___ is a suitable structure when a small number of insertions and deletions are required, but a lot of searching and retrieval is needed.",
+                options: ["Array", "Record", "Linked list", "Tree"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Linked list"
+            },
+            {
+                id: 145,
+                question: "A/an ___ is a program in a procedural language that is a set of statements. The statements are normally executed one after another. However, sometimes it is necessary to change this sequential order.",
+                options: ["Assignment statement", "None of others", "Compound statement", "Control statement"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. Control statement"
+            },
+            {
+                id: 146,
+                question: "The maximum value of a hexadecimal integer with K digits is Nmax = ___?",
+                options: ["16 bits", "16^K", "16^K -1", "2^K × 2^4", "None of the others"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. 16^K -1"
+            },
+            {
+                id: 147,
+                question: "When the size of memory is less than the size of the program in a monoprogramming OS, what happens?",
+                options: ["Need to use virtual memory", "No overflow", "Overflow", "The program cannot be run"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. The program cannot be run"
+            },
+            {
+                id: 148,
+                question: "In ___ cryptography, everyone has access to everyone's public key.",
+                options: ["Symmetric-key", "Asymmetric-key", "Secret-key", "Private-key"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Asymmetric-key"
+            },
+            {
+                id: 149,
+                question: "A ___ is a collection of related logically coherent data used by application programs in an organization.",
+                options: ["Database", "File", "Directory", "Flat-file"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Database"
+            },
+            {
+                id: 150,
+                question: "___ is a basic algorithm that adds a list of numbers.",
+                options: ["Summation", "Product", "Smallest", "Largest"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Summation"
+            },
+            {
+                id: 151,
+                question: "The scanning rate in image processing is called ______. If the resolution is sufficiently high, the human eye cannot recognize the discontinuity in reproduced images",
+                options: ["Bit map", "Pixels", "Resolution", "Color depth"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Resolution"
+            },
+            {
+                id: 152,
+                question: "______ is a multi-programming method in which multiple programs are entirely in memory with each program occupying a contiguous space.",
+                options: ["Partitioning", "Paging", "Demand paging", "Demand segmentation"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Partitioning"
+            },
+            {
+                id: 153,
+                question: "Which of the following is the coding of data so that it can't be easily understood if intercepted?",
+                options: ["Barcode", "Decoder", "Encryption", "Mnemonics"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Encryption"
+            },
+            {
+                id: 154,
+                question: "In the internet today, Backbones and provider networks are also called ______",
+                options: ["Customer networks", "Provider networks", "Peering points", "Internet service providers (ISPs)"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. Internet service providers (ISPs)"
+            },
+            {
+                id: 155,
+                question: "Programs designed to perform specific tasks is called known as",
+                options: ["System software", "Application software", "Utility programs", "Operating system"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Application software"
+            },
+            {
+                id: 156,
+                question: "______ supervises the activity of each component in a computer system.",
+                options: ["An operating system", "Hardware", "A queue", "An application program"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. An operating system"
+            },
+            {
+                id: 157,
+                question: "A billionth of a second is defined as a:",
+                options: ["Millisecond", "Microsecond", "Nanosecond", "Picoseconds"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Nanosecond"
+            },
+            {
+                id: 158,
+                question: "Which 32-bit microprocessor is used in IBM's PS/2 model-80 computer?",
+                options: ["8088", "80286", "80386", "80486"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. 80386"
+            },
+            {
+                id: 159,
+                question: "The role of the physical layer is to transfer the bits received from the data-link layer and convert them to ______ for transmission.",
+                options: ["Analog signals", "Electromagnetic signals", "Digital signals", "Electronic signals"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Electromagnetic signals"
+            },
+            {
+                id: 160,
+                question: "______ is an English-language-like representation of code.",
+                options: ["A UML diagram", "A program", "Pseudocode", "An algorithm"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Pseudocode"
+            },
+            {
+                id: 161,
+                question: "Which generation of computers is covered by the period 1964-77?",
+                options: ["First", "Second", "Third", "Forth"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Third"
+            },
+            {
+                id: 162,
+                question: "If modules are written so that they can be reused in other systems then they have high levels of ______",
+                options: ["Flexibility", "Interoperability", "Reusability", "Changeability"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Reusability"
+            },
+            {
+                id: 163,
+                question: "How many bits that we can find in the decimal number 20 in binary system?",
+                options: ["4", "5", "6", "7"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. 5"
+            },
+            {
+                id: 164,
+                question: "What is the domain name in the e-mail address kayla@nasa.gov?",
+                options: ["kayla", "kayla@nasa.gov", "nasa.gov", ".gov"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. nasa.gov"
+            },
+            {
+                id: 165,
+                question: "A control unit with five wires can define up to ______ operations.",
+                options: ["5", "10", "16", "32"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. 32"
+            },
+            {
+                id: 166,
+                question: "______ between modules in a software system must be maximized.",
+                options: ["Coupling", "Cohesion", "Neither coupling nor cohesion", "Both coupling and cohesion"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Cohesion"
+            },
+            {
+                id: 167,
+                question: "The number of bits per sample is sometimes referred to as the ______",
+                options: ["Quantization", "Sampling rate", "Encoding", "Bit depth"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. Bit depth"
+            },
+            {
+                id: 168,
+                question: "The base of the hexadecimal number system is ____",
+                options: ["2", "8", "10", "16"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. 16"
+            },
+            {
+                id: 169,
+                question: "The ______ is a protocol that is used to define how the client-server programs can be written to retrieve web pages from the Web.",
+                options: ["FTP", "SMTP", "TELNET", "HTTP"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. HTTP"
+            },
+            {
+                id: 170,
+                question: "Every process is ______.",
+                options: ["Only a job", "Only a program", "Only a partition", "A job and a program"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. A job and a program"
+            },
+            {
+                id: 171,
+                question: "In the Turing model, the ______ depends on the combination of two factors: the input data and the program.",
+                options: ["Output data", "Instructions", "Algorithm", "Data processing"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. Data processing"
+            },
+            {
+                id: 172,
+                question: "We use the ______ search for an ordered list.",
+                options: ["Sequential", "Binary", "Bubble", "Insertion"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Binary"
+            },
+            {
+                id: 173,
+                question: "Defining the users, requirements, and methods is part of the ______ phase.",
+                options: ["Analysis", "Design", "Implementation", "Testing"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Analysis"
+            },
+            {
+                id: 174,
+                question: "Which of the following representations is erroneous?",
+                options: ["(110)2", "(141)8", "(EF)16", "221"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. 221"
+            },
+            {
+                id: 175,
+                question: "What is the 80-20 rule in cache?",
+                options: ["Most computers typically spend 80 percent of their time accessing only 20 percent of the data", "Cache memory at any time contains a copy of a portion of main memory.", "It can hold data 20 percent to make access faster at least 80 percent of the time.", "The CPU need to checks the cache first."],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Most computers typically spend 80 percent of their time accessing only 20 percent of the data"
+            },
+            {
+                id: 176,
+                question: "______ is a very simple protocol using a minimum of overhead. If a process wants to send a small message and does not care much about reliability.",
+                options: ["TCP", "UDP", "IP", "HTTP"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. UDP"
+            },
+            {
+                id: 177,
+                question: "Why OS is responsible for the efficient use of input/output devices?",
+                options: ["Because need to maintains a queue for each input/output device", "Because these devices are slower in speed compared with the CPU and memory", "It may use FIFO for one device", "The manager also needs to know when a device has finished serving one process"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Because these devices are slower in speed compared with the CPU and memory"
+            },
+            {
+                id: 178,
+                question: "Which method in black-box testing is to test the software for all possible values in the input domain?",
+                options: ["Boundary-value testing", "Random testing", "Exhaustive testing", "Data flow testing"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Exhaustive testing"
+            },
+            {
+                id: 179,
+                question: "A ______ gives the user's view of a system: it shows how the user communicates with the system",
+                options: ["Class diagram", "State diagram", "Use-case diagram", "Sequence diagram"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Use-case diagram"
+            },
+            {
+                id: 180,
+                question: "An operating system NO needs to manage what resources in a computer system.",
+                options: ["Memory manager", "Process manager", "Device manager", "Input/output data manager"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. Input/output data manager"
+            },
+            {
+                id: 181,
+                question: "In a positional number system with base b, we can always find the number of digits of an integer. So how many digits can we find in the decimal number 20 in hexadecimal system?",
+                options: ["1", "2", "3", "4"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. 1"
+            },
+            {
+                id: 182,
+                question: "A program that reads each of the instructions in mnemonic form and translates it into the machine-language equivalent",
+                options: ["Machine language", "Assembler", "Interpreter", "C program"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Assembler"
+            },
+            {
+                id: 183,
+                question: "The items are divided into two lists (sorted and unsorted) ______ sort.",
+                options: ["Only in a selection", "Only in a bubble", "Only in an insertion", "In selection, bubble, or insertion"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. In selection, bubble, or insertion"
+            },
+            {
+                id: 184,
+                question: "Assume memory location that can only hold four bits. What is the result, if we have stored the integer 11 in a memory location and then try to add 9 to the unsigned integer?",
+                options: ["4", "9", "11", "20"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. 4"
+            },
+            {
+                id: 185,
+                question: "In the ______, we can think of a program as an active agent that manipulates passive objects.",
+                options: ["Procedural paradigm", "Functional paradigm", "Declarative paradigm", "Object-oriented paradigm"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Procedural paradigm"
+            },
+            {
+                id: 186,
+                question: "In the ___ a program is considered a mathematical function. In this context a function maps a list of inputs to a list of outputs",
+                options: ["Procedural paradigm", "Functional paradigm", "Declarative paradigm", "Object-oriented paradigm"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. Functional paradigm"
+            },
+            {
+                id: 187,
+                question: "RISC (reduced instruction set computer). The strategy behind RISC architecture is to have a small set of instructions that do a minimum number of ___",
+                options: ["Complex instructions", "Complex operations", "Simple operations", "Simple instructions"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. Simple instructions"
+            },
+            {
+                id: 188,
+                question: "Use a circular left shift operation on the bit pattern 1001 1000",
+                options: ["0001 1001", "0011 0001", "1001 1001", "1001 1000"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. 0011 0001"
+            },
+            {
+                id: 189,
+                question: "Each row in a relation is called ___",
+                options: ["An attribute", "A tuple", "A union", "An attitude"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. A tuple"
+            },
+            {
+                id: 190,
+                question: "When converting a decimal integer to base b, we repeatedly _____",
+                options: ["divide", "multiply", "add to", "subtract from"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. divide"
+            },
+            {
+                id: 191,
+                question: "What is quality referring to the ability to move software from one hardware platform to another",
+                options: ["Flexibility", "Interoperability", "Reusability", "Portability"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. Portability"
+            },
+            {
+                id: 192,
+                question: "What is method in the object-oriented paradigm means that we can define several operation with the same name that can do different things in related classes?",
+                options: ["Method", "Inheritance", "Polymorphism", "Classes"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Polymorphism"
+            },
+            {
+                id: 193,
+                question: "The ___ layer of the TCP/IP protocol suite is responsible for node-to-node delivery of a frame between two adjacent nodes.",
+                options: ["Transport", "Network", "Data-link", "Session"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Data-link"
+            },
+            {
+                id: 194,
+                question: "The base of the octal number system is ____",
+                options: ["2", "8", "10", "16"],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án đúng là **B**. 8"
+            },
+            {
+                id: 195,
+                question: "The ethical principle that dictates that an act is ethical when a majority of people in society agrees with it is referred to as",
+                options: ["Moral rules", "Utilization", "Social contract", "None of the others"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. Social contract"
+            },
+            {
+                id: 196,
+                question: "A step-by-step solution to a problem is called _______.",
+                options: ["hardware", "an operating system", "a computer language", "an algorithm"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. an algorithm"
+            },
+            {
+                id: 197,
+                question: "If a graph is directed, the relations between edges and arcs are ___",
+                options: ["One-way", "Two-way", "No-way", "Any-way"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. One-way"
+            },
+            {
+                id: 198,
+                question: "___ is a pictorial representation of an algorithm.",
+                options: ["A UML diagram", "A program", "Pseudocode", "An algorithm"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. A UML diagram"
+            },
+            {
+                id: 199,
+                question: "What is the result of one's complement B?",
+                options: ["Not B", "Add B with 1", "XOR B with 0", "AND B with 0", "OR B with 1"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. Not B"
+            },
+            {
+                id: 200,
+                question: "Before a disk drive can access any sector record, a computer program has to provide the record's disk address. What information does this address specify?",
+                options: ["Track number", "Sector number", "Surface number", "All of the others", "None of the others"],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án đúng là **D**. All of the others"
+            },
+            {
+                id: 201,
+                question: "The physic-layer addresses, sometimes called ___ are locally defined addresses, each of which defines a specific host or router in a network (LAN or WAN).",
+                options: ["TCP", "Port numbers", "MAC addresses", "IP address"],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án đúng là **C**. MAC addresses"
+            },
+            {
+                id: 202,
+                question: "The maximum value of an octal integer with K=2 digits is Nmax = ___",
+                options: ["63", "64", "65", "66", "None of the others"],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án đúng là **A**. 63"
+            }
+        ];
+
+
+        let userAnswers = {};
+        let showingAnswers = false;
+        let answeredQuestions = new Set(); // Add tracking
+
+        function initQuiz() {
+            // Tự động cập nhật tổng số câu hỏi
+            document.getElementById('totalQuestions').textContent = questions.length;
+            
+            renderAllQuestions();
+            updateScoreSummary();
+        }
+
+        function renderAllQuestions() {
+            const quizContent = document.getElementById('quizContent');
+            
+            quizContent.innerHTML = questions.map(question => `
+                <div class="question-item" id="question-${question.id}">
+                    <div class="question-header">
+                        <div class="question-number">Câu ${question.id}</div>
+                        <div class="question-status" id="status-${question.id}">❓</div>
+                    </div>
+                    
+                    <div class="question-text">${question.question}</div>
+                    
+                    <div class="options-container">
+                        ${question.options.map((option, index) => `
+                            <div class="option-item" onclick="selectOption(${question.id}, ${index})">
+                                ${question.type === 'multiple' ? 
+                                    `<input type="checkbox" class="option-checkbox" id="q${question.id}-opt${index}" onchange="selectOption(${question.id}, ${index})">` :
+                                    `<input type="radio" name="q${question.id}" class="option-radio" id="q${question.id}-opt${index}" onchange="selectOption(${question.id}, ${index})">`
+                                }
+                                <label class="option-text" for="q${question.id}-opt${index}">
+                                    ${String.fromCharCode(65 + index)}. ${option}
+                                </label>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="explanation" id="explanation-${question.id}">
+                        <h4><span class="icon">💡</span>Giải thích:</h4>
+                        <p>${question.explanation}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectOption(questionId, optionIndex) {
+            // Prevent changes if question already answered
+            if (answeredQuestions.has(questionId)) {
+                return;
+            }
+            
+            const question = questions.find(q => q.id === questionId);
+            const questionElement = document.getElementById(`question-${questionId}`);
+            const optionElement = document.getElementById(`q${questionId}-opt${optionIndex}`);
+            
+            if (showingAnswers) return;
+            
+            if (question.type === 'multiple') {
+                // Handle multiple choice
+                if (!userAnswers[questionId]) {
+                    userAnswers[questionId] = [];
+                }
+                
+                if (optionElement.checked) {
+                    if (!userAnswers[questionId].includes(optionIndex)) {
+                        userAnswers[questionId].push(optionIndex);
+                    }
+                } else {
+                    userAnswers[questionId] = userAnswers[questionId].filter(idx => idx !== optionIndex);
+                }
+                
+                // Check if user has selected the correct number of answers for multiple choice
+                const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
+                if (userAnswers[questionId] && userAnswers[questionId].length === correctAnswers.length) {
+                    answeredQuestions.add(questionId);
+                    disableQuestionOptions(questionId);
+                    showQuestionFeedback(questionId);
+                } else {
+                    hideQuestionFeedback(questionId);
+                }
+            } else {
+                // Handle single choice - lock immediately
+                userAnswers[questionId] = optionIndex;
+                answeredQuestions.add(questionId);
+                disableQuestionOptions(questionId);
+                showQuestionFeedback(questionId);
+            }
+            
+            updateQuestionStatus(questionId);
+            updateScoreSummary();
+        }
+
+        function disableQuestionOptions(questionId) {
+            const optionElements = document.querySelectorAll(`[id^="q${questionId}-opt"]`);
+            optionElements.forEach(element => {
+                element.disabled = true;
+                element.parentElement.style.pointerEvents = 'none';
+                element.parentElement.style.opacity = '0.7';
+            });
+        }
+
+        function showQuestionFeedback(questionId) {
+            const question = questions.find(q => q.id === questionId);
+            const explanationElement = document.getElementById(`explanation-${questionId}`);
+            const isCorrect = checkAnswer(questionId);
+            
+            // Show explanation
+            explanationElement.classList.add('show');
+            
+            // Update option styling to show correct/incorrect
+            const optionElements = document.querySelectorAll(`[id^="q${questionId}-opt"]`);
+            optionElements.forEach((element, index) => {
+                const optionContainer = element.parentElement;
+                optionContainer.classList.remove('correct', 'incorrect', 'user-selected', 'user-incorrect');
+                
+                // Remove existing indicators
+                const existingIndicator = optionContainer.querySelector('.answer-indicator');
+                if (existingIndicator) {
+                    existingIndicator.remove();
+                }
+                
+                const userAnswer = userAnswers[questionId];
+                const isUserSelection = question.type === 'multiple' ? 
+                    (userAnswer && userAnswer.includes(index)) : 
+                    (userAnswer === index);
+                
+                if (question.type === 'multiple') {
+                    const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
+                    
+                    if (correctAnswers.includes(index)) {
+                        // This is a correct answer
+                        optionContainer.classList.add('correct');
+                        const indicator = document.createElement('span');
+                        indicator.className = 'answer-indicator correct-indicator';
+                        indicator.textContent = isUserSelection ? '✓ Đúng' : '✓ Đáp án đúng';
+                        optionContainer.appendChild(indicator);
+                    } else if (isUserSelection) {
+                        // User selected wrong answer
+                        optionContainer.classList.add('user-incorrect');
+                        const indicator = document.createElement('span');
+                        indicator.className = 'answer-indicator incorrect-indicator';
+                        indicator.textContent = '✗ Sai';
+                        optionContainer.appendChild(indicator);
+                    }
+                } else {
+                    if (index === question.correct) {
+                        // This is the correct answer
+                        optionContainer.classList.add('correct');
+                        const indicator = document.createElement('span');
+                        indicator.className = 'answer-indicator correct-indicator';
+                        indicator.textContent = isUserSelection ? '✓ Đúng' : '✓ Đáp án đúng';
+                        optionContainer.appendChild(indicator);
+                    } else if (isUserSelection) {
+                        // User selected wrong answer
+                        optionContainer.classList.add('user-incorrect');
+                        const indicator = document.createElement('span');
+                        indicator.className = 'answer-indicator incorrect-indicator';
+                        indicator.textContent = '✗ Sai';
+                        optionContainer.appendChild(indicator);
+                    }
+                }
+            });
+        }
+
+        function hideQuestionFeedback(questionId) {
+            const explanationElement = document.getElementById(`explanation-${questionId}`);
+            explanationElement.classList.remove('show');
+            
+            // Remove feedback styling from options
+            const optionElements = document.querySelectorAll(`[id^="q${questionId}-opt"]`);
+            optionElements.forEach((element, index) => {
+                const optionContainer = element.parentElement;
+                optionContainer.classList.remove('correct', 'incorrect', 'user-selected', 'user-incorrect');
+                
+                // Remove existing indicators
+                const existingIndicator = optionContainer.querySelector('.answer-indicator');
+                if (existingIndicator) {
+                    existingIndicator.remove();
+                }
+            });
+        }
+
+        function updateQuestionStatus(questionId) {
+            const question = questions.find(q => q.id === questionId);
+            const statusElement = document.getElementById(`status-${questionId}`);
+            const questionElement = document.getElementById(`question-${questionId}`);
+            
+            // Check if question is properly answered
+            let isAnswered = false;
+            if (question.type === 'multiple') {
+                const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
+                isAnswered = userAnswers[questionId] && userAnswers[questionId].length === correctAnswers.length;
+            } else {
+                isAnswered = userAnswers[questionId] !== undefined;
+            }
+            
+            if (isAnswered) {
+                if (showingAnswers || hasQuestionFeedback(questionId)) {
+                    const isCorrect = checkAnswer(questionId);
+                    statusElement.textContent = isCorrect ? '✅' : '❌';
+                    questionElement.className = `question-item ${isCorrect ? 'answered' : 'incorrect'}`;
+                } else {
+                    statusElement.textContent = '✏️';
+                    questionElement.className = 'question-item answered';
+                }
+            } else {
+                statusElement.textContent = '❓';
+                questionElement.className = 'question-item';
+            }
+        }
+
+        function hasQuestionFeedback(questionId) {
+            const explanationElement = document.getElementById(`explanation-${questionId}`);
+            return explanationElement.classList.contains('show');
+        }
+
+        function checkAnswer(questionId) {
+            const question = questions.find(q => q.id === questionId);
+            const userAnswer = userAnswers[questionId];
+            
+            if (question.type === 'multiple') {
+                if (!userAnswer || userAnswer.length === 0) return false;
+                const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
+                return userAnswer.length === correctAnswers.length && 
+                       userAnswer.every(ans => correctAnswers.includes(ans));
+            } else {
+                return userAnswer === question.correct;
+            }
+        }
+
+        function updateScoreSummary() {
+            const answeredCount = Object.keys(userAnswers).filter(qId => {
+                const question = questions.find(q => q.id == qId);
+                const answer = userAnswers[qId];
+                return answer !== undefined && 
+                       (question.type === 'single' || (question.type === 'multiple' && answer.length > 0));
+            }).length;
+            
+            const correctCount = Object.keys(userAnswers).filter(qId => checkAnswer(parseInt(qId))).length;
+            const percentage = questions.length > 0 ? Math.round((correctCount / questions.length) * 100) : 0;
+            
+            document.getElementById('answeredCount').textContent = answeredCount;
+            document.getElementById('correctCount').textContent = correctCount;
+            document.getElementById('scorePercentage').textContent = percentage + '%';
+        }
+
+        function showAllAnswers() {
+            showingAnswers = true;
+            
+            questions.forEach(question => {
+                const explanationElement = document.getElementById(`explanation-${question.id}`);
+                explanationElement.classList.add('show');
+                
+                // Highlight correct answers only
+                const optionElements = document.querySelectorAll(`[id^="q${question.id}-opt"]`);
+                optionElements.forEach((element, index) => {
+                    const optionContainer = element.parentElement;
+                    optionContainer.classList.remove('correct', 'incorrect', 'selected', 'user-selected', 'user-incorrect');
+                    
+                    // Remove existing indicators
+                    const existingIndicator = optionContainer.querySelector('.answer-indicator');
+                    if (existingIndicator) {
+                        existingIndicator.remove();
+                    }
+                    
+                    if (question.type === 'multiple') {
+                        const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
+                        if (correctAnswers.includes(index)) {
+                            optionContainer.classList.add('correct');
+                            const indicator = document.createElement('span');
+                            indicator.className = 'answer-indicator correct-indicator';
+                            indicator.textContent = '✓ Đúng';
+                            optionContainer.appendChild(indicator);
+                        }
+                    } else {
+                        if (index === question.correct) {
+                            optionContainer.classList.add('correct');
+                            const indicator = document.createElement('span');
+                            indicator.className = 'answer-indicator correct-indicator';
+                            indicator.textContent = '✓ Đáp án đúng';
+                            optionContainer.appendChild(indicator);
+                        }
+                    }
+                    
+                    // Disable further interactions
+                    element.disabled = true;
+                });
+                
+                updateQuestionStatus(question.id);
+            });
+            
+            updateScoreSummary();
+        }
+
+        function checkAllAnswers() {
+            showingAnswers = true;
+            
+            questions.forEach(question => {
+                const explanationElement = document.getElementById(`explanation-${question.id}`);
+                explanationElement.classList.add('show');
+                
+                // Show user answers vs correct answers
+                const optionElements = document.querySelectorAll(`[id^="q${question.id}-opt"]`);
+                optionElements.forEach((element, index) => {
+                    const optionContainer = element.parentElement;
+                    optionContainer.classList.remove('correct', 'incorrect', 'selected', 'user-selected', 'user-incorrect');
+                    
+                    // Remove existing indicators
+                    const existingIndicator = optionContainer.querySelector('.answer-indicator');
+                    if (existingIndicator) {
+                        existingIndicator.remove();
+                    }
+                    
+                    const userAnswer = userAnswers[question.id];
+                    const isUserSelection = question.type === 'multiple' ? 
+                        (userAnswer && userAnswer.includes(index)) : 
+                        (userAnswer === index);
+                    
+                    if (question.type === 'multiple') {
+                        const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
+                        
+                        if (correctAnswers.includes(index)) {
+                            // This is a correct answer
+                            optionContainer.classList.add('correct');
+                            const indicator = document.createElement('span');
+                            indicator.className = 'answer-indicator correct-indicator';
+                            indicator.textContent = isUserSelection ? '✓ Đúng - Bạn đã chọn' : '✓ Đáp án đúng';
+                            optionContainer.appendChild(indicator);
+                        } else if (isUserSelection) {
+                            // User selected wrong answer
+                            optionContainer.classList.add('user-incorrect');
+                            const indicator = document.createElement('span');
+                            indicator.className = 'answer-indicator incorrect-indicator';
+                            indicator.textContent = '✗ Sai - Bạn đã chọn';
+                            optionContainer.appendChild(indicator);
+                        }
+                    } else {
+                        if (index === question.correct) {
+                            // This is the correct answer
+                            optionContainer.classList.add('correct');
+                            const indicator = document.createElement('span');
+                            indicator.className = 'answer-indicator correct-indicator';
+                            indicator.textContent = isUserSelection ? '✓ Đúng - Bạn đã chọn' : '✓ Đáp án đúng';
+                            optionContainer.appendChild(indicator);
+                        } else if (isUserSelection) {
+                            // User selected wrong answer
+                            optionContainer.classList.add('user-incorrect');
+                            const indicator = document.createElement('span');
+                            indicator.className = 'answer-indicator incorrect-indicator';
+                            indicator.textContent = '✗ Sai - Bạn đã chọn';
+                            optionContainer.appendChild(indicator);
+                        }
+                    }
+                    
+                    // Disable further interactions
+                    element.disabled = true;
+                });
+                
+                updateQuestionStatus(question.id);
+            });
+            
+            updateScoreSummary();
+        }
+
+        function resetQuiz() {
+            userAnswers = {};
+            showingAnswers = false;
+            answeredQuestions.clear();
+            
+            // Reset all form elements
+            document.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(input => {
+                input.checked = false;
+                input.disabled = false;
+                input.parentElement.style.pointerEvents = 'auto';
+                input.parentElement.style.opacity = '1';
+            });
+            
+            // Hide all explanations and feedback
+            questions.forEach(question => {
+                hideQuestionFeedback(question.id);
+            });
+            
+            // Reset all option styling and remove indicators
+            document.querySelectorAll('.option-item').forEach(option => {
+                option.classList.remove('correct', 'incorrect', 'selected', 'user-selected', 'user-incorrect');
+                const indicator = option.querySelector('.answer-indicator');
+                if (indicator) {
+                    indicator.remove();
+                }
+            });
+            
+            // Update all question statuses
+            questions.forEach(question => {
+                updateQuestionStatus(question.id);
+            });
+            
+            updateScoreSummary();
+        }
+
+        // Initialize quiz when page loads
+        document.addEventListener('DOMContentLoaded', initQuiz);
+    </script>
+</body>
+</html>

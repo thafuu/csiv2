@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Quiz - CSI106 FA24 RE 505802</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .quiz-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .quiz-header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .quiz-header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .score-summary {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-number {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .score-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .quiz-content {
+            padding: 40px;
+        }
+
+        .question-item {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .question-item.answered {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+
+        .question-item.incorrect {
+            border-color: #dc3545;
+            background: #fff8f8;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .question-number {
+            background: #667eea;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .question-status {
+            font-size: 1.2em;
+        }
+
+        .question-text {
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            color: #333;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+
+        .options-container {
+            margin-bottom: 15px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            background: white;
+            margin: 8px 0;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .option-item:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .option-item.selected {
+            border-color: #667eea;
+            background: #e3f2fd;
+        }
+
+        .option-item.correct {
+            border-color: #28a745;
+            background: #d4edda;
+            color: #155724;
+            font-weight: bold;
+        }
+
+        .option-item.incorrect {
+            border-color: #dc3545;
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .option-item.user-selected {
+            border-color: #007bff;
+            background: #cce7ff;
+            font-weight: bold;
+        }
+
+        .option-item.user-incorrect {
+            border-color: #dc3545;
+            background: #f8d7da;
+            color: #721c24;
+            text-decoration: line-through;
+        }
+
+        .answer-indicator {
+            margin-left: 10px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .correct-indicator {
+            color: #28a745;
+        }
+
+        .incorrect-indicator {
+            color: #dc3545;
+        }
+
+        .explanation {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .explanation.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .explanation h4 {
+            color: #856404;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            font-size: 1em;
+        }
+
+        .explanation p {
+            color: #533f04;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .action-buttons {
+            background: white;
+            padding: 20px 40px;
+            border-top: 2px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .icon {
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="quiz-header">
+            <h1>CSI106 FA24 RE 505802 Quiz</h1>
+            <p>Trắc nghiệm ôn tập môn CSI106 - Khoa học máy tính</p>
+            <div class="score-summary">
+                <div class="score-item">
+                    <div class="score-number" id="totalQuestions">0</div>
+                    <div class="score-label">Tổng câu</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-number" id="answeredCount">0</div>
+                    <div class="score-label">Đã trả lời</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-number" id="correctCount">0</div>
+                    <div class="score-label">Đúng</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-number" id="scorePercentage">0%</div>
+                    <div class="score-label">Điểm số</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="quiz-content" id="quizContent">
+            <!-- Questions will be dynamically inserted here by JavaScript -->
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-secondary" onclick="resetQuiz()">
+                🔄 Làm lại toàn bộ
+            </button>
+            <div>
+                <button class="btn btn-primary" onclick="showAllAnswers()">
+                    👁️ Hiện tất cả đáp án
+                </button>
+                <button class="btn btn-success" onclick="checkAllAnswers()">
+                    ✅ Kiểm tra kết quả
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                id: 1,
+                question: "In the Turing model, the __________ depends on the combination of two factors: the input data and the program.",
+                options: [
+                    "Output data",
+                    "Instructions",
+                    "Algorithm",
+                    "Data processing"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án: A. Output data<br>🔍 <strong>Giải thích:</strong> Trong mô hình Turing, dữ liệu đầu ra (output) phụ thuộc vào sự kết hợp giữa dữ liệu đầu vào và chương trình.<br>💡 <strong>Mẹo:</strong> Chọn đáp án liên quan đến kết quả của chương trình."
+            },
+            {
+                id: 2,
+                question: "Who is considered the 'father' of the minicomputer and one of the founding fathers of the modern computer industry worldwide?",
+                options: [
+                    "George Tate",
+                    "Kenneth H. Olsen",
+                    "Seymour Cray",
+                    "Basic Pascal",
+                    "None of the others"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án: B. Kenneth H. Olsen<br>🔍 <strong>Giải thích:</strong> Kenneth H. Olsen là người sáng lập DEC và được coi là \"cha đẻ\" của minicomputer.<br>💡 <strong>Mẹo:</strong> Chọn người có liên quan đến các công ty nổi tiếng trong ngành máy tính."
+            },
+            {
+                id: 3,
+                question: "A path by which communication is achieved between a central processor and other devices is called __________.",
+                options: [
+                    "Audit trail",
+                    "Network",
+                    "Bus",
+                    "Channel",
+                    "None of the others"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án: C. Bus<br>🔍 <strong>Giải thích:</strong> Bus là một hệ thống đường truyền dữ liệu giữa các bộ phận trong máy tính, bao gồm bộ xử lý và các thiết bị khác.<br>💡 <strong>Mẹo:</strong> Chọn từ chỉ các đường truyền dữ liệu hoặc mạng trong hệ thống."
+            },
+            {
+                id: 4,
+                question: "If the memory address space is 16 MB and the word size is 8 bits, then __________ bits are needed to access each word.",
+                options: [
+                    "8",
+                    "16",
+                    "24",
+                    "32"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án: C. 24<br>🔍 <strong>Giải thích:</strong> 16 MB = 16 * 2^20 bytes = 2^4 * 2^20 = 2^24 bytes. Do đó, cần 24 bit để định địa chỉ cho mỗi byte (word 8 bit).<br>💡 <strong>Mẹo:</strong> Chuyển đổi không gian địa chỉ sang luỹ thừa của 2 để tìm số bit cần thiết."
+            },
+            {
+                id: 5,
+                question: "Which printer uses a combination of laser-beam and electro-photographic techniques?",
+                options: [
+                    "Laser printers",
+                    "Dot-Matrix",
+                    "Line printer",
+                    "Daisy wheel",
+                    "None of the others"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án: A. Laser printers<br>🔍 <strong>Giải thích:</strong> Máy in laser sử dụng tia laser và kỹ thuật quang điện để in ấn.<br>💡 <strong>Mẹo:</strong> Chọn loại máy in liên quan đến công nghệ laser."
+            },
+            {
+                id: 6,
+                question: "RISC (Reduced Instruction Set Computer): The strategy behind RISC architecture is to have a small set of instructions that do a minimum number of __________.",
+                options: [
+                    "Complex instructions",
+                    "Complex operations",
+                    "Simple operations",
+                    "Simple instructions"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án: C. Simple operations<br>🔍 <strong>Giải thích:</strong> Kiến trúc RISC (Reduced Instruction Set Computer) sử dụng tập lệnh nhỏ để thực hiện các phép toán đơn giản.<br>💡 <strong>Mẹo:</strong> Tìm đáp án liên quan đến các phép toán cơ bản và đơn giản."
+            },
+            {
+                id: 7,
+                question: "Instructions and memory addresses are represented by __________.",
+                options: [
+                    "Character codes",
+                    "Binary codes",
+                    "Binary word",
+                    "Parity bit",
+                    "None of the others"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án: B. Binary codes<br>🔍 <strong>Giải thích:</strong> Các lệnh và địa chỉ bộ nhớ được biểu diễn bằng mã nhị phân (binary).<br>💡 <strong>Mẹo:</strong> Chọn đáp án liên quan đến mã số và hệ thống nhị phân."
+            },
+            {
+                id: 8,
+                question: "The base of the octal number system is __________.",
+                options: [
+                    "2",
+                    "8",
+                    "10",
+                    "16"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án: B. 8<br>🔍 <strong>Giải thích:</strong> Hệ số của hệ số octal là 8 (sử dụng các chữ số từ 0 đến 7).<br>💡 <strong>Mẹo:</strong> Chọn cơ số của hệ số trong câu hỏi liên quan đến hệ số octal."
+            },
+            {
+                id: 9,
+                question: "The maximum value of a binary integer with K digits is __________. For example, if K = 5, the maximum value is:",
+                options: [
+                    "30",
+                    "31",
+                    "32",
+                    "33"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án: B. 31<br>🔍 <strong>Giải thích:</strong> Giá trị lớn nhất của một số nhị phân với K chữ số là 2^K - 1. Với K = 5, giá trị lớn nhất là 2^5 - 1 = 32 - 1 = 31.<br>💡 <strong>Mẹo:</strong> Tính giá trị lớn nhất bằng công thức 2^K - 1."
+            },
+            {
+                id: 10,
+                question: "The maximum value of an octal integer with K = 2 digits is Nmax = __________.",
+                options: [
+                    "63",
+                    "64",
+                    "65",
+                    "66",
+                    "None of the others"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án: A. 63<br>🔍 <strong>Giải thích:</strong> Số octal lớn nhất với 2 chữ số là 77 (octal), tương đương 7*8^1 + 7*8^0 = 56 + 7 = 63 (thập phân).<br>💡 <strong>Mẹo:</strong> Tính giá trị lớn nhất trong hệ octal, sử dụng giá trị tối đa là 7 cho mỗi chữ số."
+            },
+            {
+                id: 11,
+                question: "Conversion of the binary number 1010101000010111 to a hexadecimal number is __________.",
+                options: [
+                    "D8F9",
+                    "A8B9",
+                    "AA17",
+                    "D9F8",
+                    "None of the others"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án: C. AA17<br>🔍 <strong>Giải thích:</strong> Nhóm 4 bit: 1010 (A), 1010 (A), 0001 (1), 0111 (7). Kết quả là AA17.<br>💡 <strong>Mẹo:</strong> Nhóm các bit thành 4 bit và chuyển sang hệ thập lục phân."
+            },
+            {
+                id: 12,
+                question: "What is the number of bit patterns provided by a 7-bit code?",
+                options: [
+                    "256",
+                    "128",
+                    "64",
+                    "512",
+                    "None of the others"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án: B. 128<br>🔍 <strong>Giải thích:</strong> Một mã 7-bit cung cấp 2^7 = 128 mẫu bit khác nhau.<br>💡 <strong>Mẹo:</strong> Sử dụng công thức 2^N để tính số lượng bit patterns."
+            },
+            {
+                id: 13,
+                question: "A byte consists of __________ bits.",
+                options: [
+                    "2",
+                    "4",
+                    "8",
+                    "16"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án: C. 8<br>🔍 <strong>Giải thích:</strong> Một byte gồm 8 bit.<br>💡 <strong>Mẹo:</strong> Nhớ rằng 1 byte = 8 bit."
+            },
+            {
+                id: 14,
+                question: "If we cannot record all the values of an audio signal over an interval, we can record some of them. This means that we select only a finite number of points on the analog signal, measure their values, and record them. This is called __________.",
+                options: [
+                    "Digital",
+                    "Analog",
+                    "Sampling",
+                    "Binary"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án: C. Sampling<br>🔍 <strong>Giải thích:</strong> Quá trình lấy mẫu (sampling) là việc ghi lại một số điểm giá trị của tín hiệu analog.<br>💡 <strong>Mẹo:</strong> Tìm từ liên quan đến việc ghi lại dữ liệu rời rạc từ tín hiệu liên tục."
+            },
+            {
+                id: 15,
+                question: "Images are stored in computers using __________ techniques.",
+                options: [
+                    "Raster graphics and bit map",
+                    "Vector graphics and bit map",
+                    "True-color and raster graphics",
+                    "Index-color and vector graphics",
+                    "Bit map"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án: A. Raster graphics and bit map<br>🔍 <strong>Giải thích:</strong> Hình ảnh được lưu trữ trong máy tính dưới dạng đồ họa raster và bitmap.<br>💡 <strong>Mẹo:</strong> Chọn đáp án liên quan đến phương thức lưu trữ hình ảnh pixel."
+            },
+            {
+                id: 16,
+                question: "Use a simple right shift operation on the bit pattern 1001 1000. The result is __________.",
+                options: [
+                    "1001 1001",
+                    "1001 1000",
+                    "0100 1101",
+                    "0100 1100"
+                ],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án: D. 0100 1100<br>🔍 <strong>Giải thích:</strong> Phép dịch phải đơn giản dịch các bit sang bên phải một vị trí, bit cuối cùng bị loại bỏ và bit đầu tiên được thêm vào là 0. 1001 1000 -> 0100 1100.<br>💡 <strong>Mẹo:</strong> Chọn đáp án tương ứng với dịch bit phải."
+            },
+            {
+                id: 17,
+                question: "Use a simple left shift operation on the bit pattern 1001 1000. The result is __________.",
+                options: [
+                    "0001 1001",
+                    "0001 1010",
+                    "0011 0000",
+                    "0011 0001"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án: C. 0011 0000<br>🔍 <strong>Giải thích:</strong> Phép dịch trái đơn giản dịch các bit sang bên trái một vị trí, bit đầu tiên bị loại bỏ và bit cuối cùng được thêm vào là 0. 1001 1000 -> 0011 0000.<br>💡 <strong>Mẹo:</strong> Chọn đáp án tương ứng với dịch bit trái."
+            },
+            {
+                id: 18,
+                question: "Which network is a packet switching network?",
+                options: [
+                    "Ring network",
+                    "LAN",
+                    "Star network",
+                    "EuroNET",
+                    "None of the others"
+                ],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án: D. EuroNET<br>🔍 <strong>Giải thích:</strong> EuroNET là một mạng chuyển gói (packet-switching network).<br>💡 <strong>Mẹo:</strong> Chọn mạng có tính năng chuyển gói (packet-switching)."
+            },
+            {
+                id: 19,
+                question: "The TCP/IP model has __________ layers.",
+                options: [
+                    "Five",
+                    "Six",
+                    "Seven",
+                    "Eight"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án: A. Five<br>🔍 <strong>Giải thích:</strong> Mô hình TCP/IP có 5 lớp: Application, Transport, Internet (Network), Data Link, và Physical.<br>💡 <strong>Mẹo:</strong> Nhớ số lớp của mô hình TCP/IP."
+            },
+            {
+                id: 20,
+                question: "An IPv4 address is a __________ address that uniquely and universally defines the connection of a host or a router to the internet.",
+                options: [
+                    "32-bit",
+                    "64-bit",
+                    "128-bit",
+                    "None of the others"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án: A. 32-bit<br>🔍 <strong>Giải thích:</strong> Địa chỉ IPv4 có kích thước 32 bit.<br>💡 <strong>Mẹo:</strong> Nhớ rằng địa chỉ IPv4 luôn là 32-bit."
+            },
+            {
+                id: 21,
+                question: "The __________ acts as a liaison between a client program and a server program, providing a process-to-process connection.",
+                options: [
+                    "Physical",
+                    "Data-link",
+                    "Network",
+                    "Transport"
+                ],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án: D. Transport<br>🔍 <strong>Giải thích:</strong> Lớp Transport hoạt động như một cầu nối giữa chương trình khách và chương trình máy chủ, cung cấp kết nối giữa các tiến trình.<br>💡 <strong>Mẹo:</strong> Chọn lớp chịu trách nhiệm kết nối giữa các tiến trình."
+            },
+            {
+                id: 22,
+                question: "In the __________ paradigm, there is no need for a server process to be running all the time and waiting for client processes to connect.",
+                options: [
+                    "P2P",
+                    "Traditional",
+                    "Client-server",
+                    "Model"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án: A. P2P<br>🔍 <strong>Giải thích:</strong> Trong mô hình P2P (Peer-to-Peer), không cần một tiến trình máy chủ luôn chạy chờ kết nối từ các tiến trình khách.<br>💡 <strong>Mẹo:</strong> Chọn mô hình không yêu cầu máy chủ luôn hoạt động."
+            },
+            {
+                id: 23,
+                question: "All the instructions and procedures needed to start up a computer, up to the point it can load an operating system, are stored in ROM chips. In IBM-compatible PCs, this is called the __________.",
+                options: [
+                    "RAM BIOS",
+                    "ROM BIOS",
+                    "EPROM",
+                    "POST",
+                    "None of the others"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án: B. ROM BIOS<br>🔍 <strong>Giải thích:</strong> BIOS trong các máy tính IBM tương thích được lưu trữ trong ROM, và nó giúp khởi động máy tính cho đến khi hệ điều hành được tải.<br>💡 <strong>Mẹo:</strong> Chọn từ \"BIOS\" và \"ROM\" cho những thứ liên quan đến khởi động hệ thống."
+            },
+            {
+                id: 24,
+                question: "A multiprogramming system is one that can __________.",
+                options: [
+                    "Run very fast",
+                    "Share hardware resources with many programs simultaneously",
+                    "Compute many programs simultaneously",
+                    "Use many operating systems",
+                    "None of the others"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án: B. Share hardware resources with many programs simultaneously<br>🔍 <strong>Giải thích:</strong> Hệ thống đa chương trình (multiprogramming) cho phép chia sẻ tài nguyên phần cứng giữa nhiều chương trình cùng lúc.<br>💡 <strong>Mẹo:</strong> Chọn đáp án liên quan đến chia sẻ tài nguyên giữa các chương trình."
+            },
+            {
+                id: 25,
+                question: "Which technique is used in multiprogramming where the memory manager determines the size beforehand, and each program occupies a contiguous space?",
+                options: [
+                    "Partitioning",
+                    "Paging",
+                    "Demand paging",
+                    "Demand segmentation"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án: A. Partitioning<br>🔍 <strong>Giải thích:</strong> Trong kỹ thuật phân vùng (partitioning), bộ quản lý bộ nhớ xác định trước kích thước và mỗi chương trình chiếm một không gian liên tiếp.<br>💡 <strong>Mẹo:</strong> Chọn kỹ thuật phân chia bộ nhớ."
+            },
+            {
+                id: 26,
+                question: "Every process is __________.",
+                options: [
+                    "Only a job",
+                    "Only a program",
+                    "Only a partition",
+                    "A job and a program"
+                ],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án: D. A job and a program<br>🔍 <strong>Giải thích:</strong> Một tiến trình vừa là một công việc (job) vừa là một chương trình đang chạy.<br>💡 <strong>Mẹo:</strong> Chọn đáp án liên quan đến một khái niệm kết hợp giữa công việc và chương trình."
+            },
+            {
+                id: 27,
+                question: "Why is the OS responsible for the efficient use of input/output devices?",
+                options: [
+                    "Because it needs to maintain a queue for each input/output device",
+                    "Because these devices are slower in speed compared with the CPU and memory",
+                    "It may use FIFO for one device",
+                    "The manager also needs to know when a device has finished serving one process"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án: B. Because these devices are slower in speed compared with the CPU and memory<br>🔍 <strong>Giải thích:</strong> Hệ điều hành cần quản lý các thiết bị vào/ra hiệu quả vì các thiết bị này thường chậm hơn so với CPU và bộ nhớ.<br>💡 <strong>Mẹo:</strong> Chọn đáp án liên quan đến việc quản lý các thiết bị chậm."
+            },
+            {
+                id: 28,
+                question: "The list of coded instructions is called __________.",
+                options: [
+                    "Computer program",
+                    "Algorithm",
+                    "Flowchart",
+                    "Utility programs",
+                    "None of the others"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án: A. Computer program<br>🔍 <strong>Giải thích:</strong> Danh sách các lệnh mã hóa là chương trình máy tính.<br>💡 <strong>Mẹo:</strong> Chọn đáp án liên quan đến chương trình và mã lệnh."
+            },
+            {
+                id: 29,
+                question: "__________ is an English-language-like representation of an algorithm. There is no standard for it — some people use a lot of detail.",
+                options: [
+                    "Pseudocode",
+                    "Unified Modeling Language (UML)",
+                    "Flowchart",
+                    "State diagram"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án: A. Pseudocode<br>🔍 <strong>Giải thích:</strong> Pseudocode là cách diễn đạt thuật toán gần giống tiếng Anh, không có chuẩn hóa cụ thể.<br>💡 <strong>Mẹo:</strong> Chọn thuật ngữ liên quan đến việc diễn đạt thuật toán bằng ngôn ngữ tự nhiên."
+            },
+            {
+                id: 30,
+                question: "We use the __________ search for an ordered list.",
+                options: [
+                    "Sequential",
+                    "Binary",
+                    "Bubble",
+                    "Insertion"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án: B. Binary<br>🔍 <strong>Giải thích:</strong> Tìm kiếm nhị phân (binary search) là phương pháp tìm kiếm hiệu quả cho danh sách đã được sắp xếp.<br>💡 <strong>Mẹo:</strong> Chọn phương pháp tìm kiếm cho danh sách đã sắp xếp."
+            },
+            {
+                id: 31,
+                question: "The items are divided into two lists (sorted and unsorted) in __________ sort.",
+                options: [
+                    "Only in a selection",
+                    "Only in a bubble",
+                    "Only in an insertion",
+                    "In selection, bubble, or insertion"
+                ],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án: D. In selection, bubble, or insertion<br>🔍 <strong>Giải thích:</strong> Các thuật toán selection, bubble và insertion đều sử dụng kỹ thuật chia danh sách thành hai phần: đã sắp xếp và chưa sắp xếp.<br>💡 <strong>Mẹo:</strong> Chọn các thuật toán sắp xếp có phân chia danh sách."
+            },
+            {
+                id: 32,
+                question: "The first CAD system called AutoCAD for PCs was announced in 1982. Who announced it?",
+                options: [
+                    "Intel Corpn.",
+                    "Rolta India Ltd.",
+                    "Autodesk Inc.",
+                    "AT & T Corp.",
+                    "None of the others"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án: C. Autodesk Inc.<br>🔍 <strong>Giải thích:</strong> AutoCAD, hệ thống CAD đầu tiên cho PC, được công ty Autodesk Inc. phát hành vào năm 1982.<br>💡 <strong>Mẹo:</strong> Chọn công ty nổi tiếng trong ngành phần mềm CAD."
+            },
+            {
+                id: 33,
+                question: "Programs designed to perform specific tasks are called __________.",
+                options: [
+                    "System software",
+                    "Application software",
+                    "Utility programs",
+                    "Operating system",
+                    "None of the others"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án: B. Application software<br>🔍 <strong>Giải thích:</strong> Phần mềm ứng dụng (application software) được thiết kế để thực hiện các nhiệm vụ cụ thể.<br>💡 <strong>Mẹo:</strong> Chọn phần mềm phục vụ mục đích cụ thể."
+            },
+            {
+                id: 34,
+                question: "Which language of the procedural paradigm is a high-level language and also has some low-level instructions?",
+                options: [
+                    "COBOL",
+                    "C",
+                    "Pascal",
+                    "Ada"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án: B. C<br>🔍 <strong>Giải thích:</strong> C là một ngôn ngữ cấp cao nhưng cũng hỗ trợ một số lệnh ở cấp thấp.<br>💡 <strong>Mẹo:</strong> Chọn ngôn ngữ hỗ trợ cả cấp cao và thấp."
+            },
+            {
+                id: 35,
+                question: "A __________ is a unit of code consisting of zero or more statements, also known as a block. Example:\nX = 1;\nY = 20;\n}",
+                options: [
+                    "Compound statement",
+                    "Assignment statement",
+                    "Control statement",
+                    "None of the others"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án: A. Compound statement<br>🔍 <strong>Giải thích:</strong> Câu lệnh hợp (compound statement) là một khối mã bao gồm một hoặc nhiều câu lệnh.<br>💡 <strong>Mẹo:</strong> Chọn loại câu lệnh có nhiều câu lệnh bên trong."
+            },
+            {
+                id: 36,
+                question: "In the __________ phase, the project team needs to choose a language or a set of languages from among the procedural languages.",
+                options: [
+                    "Analysis phase",
+                    "Design phase",
+                    "Implementation phase",
+                    "Testing phase"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án: C. Implementation phase<br>🔍 <strong>Giải thích:</strong> Trong giai đoạn triển khai, nhóm dự án lựa chọn ngôn ngữ lập trình hoặc bộ ngôn ngữ phù hợp.<br>💡 <strong>Mẹo:</strong> Chọn giai đoạn liên quan đến việc thực thi mã nguồn."
+            },
+            {
+                id: 37,
+                question: "Defining the users, requirements, and methods is part of the __________ phase.",
+                options: [
+                    "Analysis",
+                    "Design",
+                    "Implementation",
+                    "Testing"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án: A. Analysis<br>🔍 <strong>Giải thích:</strong> Giai đoạn phân tích liên quan đến việc xác định người sử dụng, yêu cầu và phương pháp.<br>💡 <strong>Mẹo:</strong> Chọn giai đoạn liên quan đến việc xác định yêu cầu và người dùng."
+            },
+            {
+                id: 38,
+                question: "In the system development process, structure charts are tools used in the __________ phase.",
+                options: [
+                    "Analysis",
+                    "Design",
+                    "Implementation",
+                    "Testing"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án: B. Design<br>🔍 <strong>Giải thích:</strong> Biểu đồ cấu trúc được sử dụng trong giai đoạn thiết kế hệ thống.<br>💡 <strong>Mẹo:</strong> Chọn giai đoạn thiết kế có liên quan đến cấu trúc."
+            },
+            {
+                id: 39,
+                question: "What does quality refer to when talking about the ability to move software from one hardware platform to another?",
+                options: [
+                    "Flexibility",
+                    "Interoperability",
+                    "Reusability",
+                    "Changeability"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án: B. Interoperability<br>🔍 <strong>Giải thích:</strong> Tính tương thích (interoperability) là khả năng di chuyển phần mềm từ nền tảng phần cứng này sang nền tảng phần cứng khác.<br>💡 <strong>Mẹo:</strong> Chọn từ liên quan đến việc làm việc trên các nền tảng khác nhau."
+            },
+            {
+                id: 40,
+                question: "What is the method in black-box testing where a subset of values in the input domain is selected for testing?",
+                options: [
+                    "Boundary-value testing",
+                    "Random testing",
+                    "Exhaustive testing",
+                    "Data flow testing"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án: A. Boundary-value testing<br>🔍 <strong>Giải thích:</strong> Kiểm thử giá trị biên (boundary-value testing) là phương pháp chọn các giá trị biên trong miền đầu vào để kiểm tra.<br>💡 <strong>Mẹo:</strong> Chọn phương pháp kiểm thử với giá trị biên."
+            },
+            {
+                id: 41,
+                question: "What is the more common technique for storing two-dimensional arrays in memory?",
+                options: [
+                    "Column-major storage",
+                    "DMA",
+                    "Isolated I/O",
+                    "Row-major storage"
+                ],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án: D. Row-major storage<br>🔍 <strong>Giải thích:</strong> Kỹ thuật lưu trữ mảng hai chiều phổ biến hơn là lưu trữ theo hàng (row-major), tức là các phần tử trong mỗi hàng được lưu liên tiếp nhau trong bộ nhớ.<br>💡 <strong>Mẹo:</strong> Chọn lưu trữ theo hàng cho mảng 2D."
+            },
+            {
+                id: 42,
+                question: "__________ is a set of characters that is treated like an array in some languages and as a type in others.",
+                options: [
+                    "A string",
+                    "A record",
+                    "A symbol",
+                    "A link"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án: A. A string<br>🔍 <strong>Giải thích:</strong> Chuỗi (string) là một tập hợp các ký tự, trong một số ngôn ngữ nó được xử lý như mảng, trong khi các ngôn ngữ khác lại xem đó như một kiểu dữ liệu riêng.<br>💡 <strong>Mẹo:</strong> Chọn \"string\" khi nói về chuỗi ký tự."
+            },
+            {
+                id: 43,
+                question: "The name of a linked list is the name of the head pointer that points to the __________ of the list.",
+                options: [
+                    "First node",
+                    "Second node",
+                    "Null node",
+                    "Last node"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án: A. First node<br>🔍 <strong>Giải thích:</strong> Tên của danh sách liên kết là tên của con trỏ đầu, trỏ đến nút đầu tiên của danh sách.<br>💡 <strong>Mẹo:</strong> Danh sách liên kết luôn bắt đầu từ nút đầu tiên."
+            },
+            {
+                id: 44,
+                question: "The Stack operation returns a/an __________.",
+                options: [
+                    "Full stack",
+                    "Empty stack",
+                    "Check status of stack",
+                    "All of the others"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án: C. Check status of stack<br>🔍 <strong>Giải thích:</strong> Phép toán Stack thường kiểm tra trạng thái của stack, chẳng hạn như kiểm tra xem stack có đầy hay không.<br>💡 <strong>Mẹo:</strong> Chọn kiểm tra trạng thái của stack."
+            },
+            {
+                id: 45,
+                question: "A binary search tree (BST) is a binary tree with one extra property: the key value of the root is __________ the values of all nodes in each left subtree.",
+                options: [
+                    "Greater than",
+                    "Less than",
+                    "Equal to",
+                    "Smaller than"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án: A. Greater than<br>🔍 <strong>Giải thích:</strong> Theo định nghĩa chuẩn của cây tìm kiếm nhị phân (BST), giá trị của nút gốc lớn hơn tất cả giá trị trong cây con bên trái và nhỏ hơn tất cả giá trị trong cây con bên phải.<br>💡 <strong>Mẹo:</strong> Nhớ quy tắc: `left < root < right`."
+            },
+            {
+                id: 46,
+                question: "The queue operation: \"queue (queueName)\" is used to __________.",
+                options: [
+                    "Delete queue",
+                    "Check status of queue",
+                    "Create an empty queue",
+                    "Insert queue"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án: C. Create an empty queue<br>🔍 <strong>Giải thích:</strong> Phép toán \"queue (queueName)\" được dùng để tạo một hàng đợi trống.<br>💡 <strong>Mẹo:</strong> Chọn đáp án liên quan đến tạo mới hàng đợi."
+            },
+            {
+                id: 47,
+                question: "When a sequential file is updated, the __________ file gets the actual update.",
+                options: [
+                    "New master",
+                    "Old master",
+                    "Transaction",
+                    "Error report"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "Gemini, chat GPT chọn A, file chọn C"
+            },
+            {
+                id: 48,
+                question: "If the transaction file key is 20 and the first master file key is 25, then we __________.",
+                options: [
+                    "Add the new record to the new master file",
+                    "Revise the contents of the old master file",
+                    "Delete the data",
+                    "Write the old master file record to the new master file"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án: A. Add the new record to the new master file<br>🔍 <strong>Giải thích:</strong> Trong thuật toán cập nhật tệp tuần tự, nếu khóa của tệp giao dịch (20) nhỏ hơn khóa của tệp chính (25), điều đó có nghĩa là bản ghi giao dịch là một bản ghi mới và nên được thêm vào tệp chính mới.<br>💡 <strong>Mẹo:</strong> So sánh khóa để xác định hành động (thêm, sửa, xóa)."
+            },
+            {
+                id: 49,
+                question: "The __________ method is used when a collision occurs, and the prime area addresses are searched for an open or unoccupied record where the new data can be placed.",
+                options: [
+                    "Linked list resolution",
+                    "Open addressing resolution",
+                    "Bucket hashing",
+                    "Digit extraction hashing"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án: B. Open addressing resolution<br>🔍 <strong>Giải thích:</strong> Khi xảy ra va chạm, phương pháp \"open addressing\" sẽ tìm kiếm địa chỉ trống trong vùng chính để chèn dữ liệu mới.<br>💡 <strong>Mẹo:</strong> Chọn \"open addressing\" khi nói đến giải quyết va chạm."
+            },
+            {
+                id: 50,
+                question: "The intersection of a column and row in a spreadsheet is called a __________.",
+                options: [
+                    "Key",
+                    "Field",
+                    "Cell",
+                    "Menu",
+                    "None of the others"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án: C. Cell<br>🔍 <strong>Giải thích:</strong> Giao điểm của một cột và một hàng trong bảng tính được gọi là ô (cell).<br>💡 <strong>Mẹo:</strong> Chọn \"cell\" cho giao điểm giữa hàng và cột."
+            },
+            {
+                id: 51,
+                question: "In the relational database model, data is organized in __________ called relations.",
+                options: [
+                    "Two-dimensional array",
+                    "Two-dimensional tables",
+                    "Two-dimensional record",
+                    "None of the others"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án: B. Two-dimensional tables<br>🔍 <strong>Giải thích:</strong> Trong mô hình cơ sở dữ liệu quan hệ, dữ liệu được tổ chức dưới dạng bảng hai chiều (relations).<br>💡 <strong>Mẹo:</strong> Chọn \"tables\" cho mô hình cơ sở dữ liệu quan hệ."
+            },
+            {
+                id: 52,
+                question: "Each column in a relation is called __________.",
+                options: [
+                    "An attribute",
+                    "A tuple",
+                    "A union",
+                    "An attitude"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án: A. An attribute<br>🔍 <strong>Giải thích:</strong> Mỗi cột trong một quan hệ trong cơ sở dữ liệu được gọi là thuộc tính (attribute).<br>💡 <strong>Mẹo:</strong> Chọn \"attribute\" cho cột trong cơ sở dữ liệu."
+            },
+            {
+                id: 53,
+                question: "Which of the following is a binary operator?",
+                options: [
+                    "Select",
+                    "Update",
+                    "Difference",
+                    "All of the above"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án: C. Difference<br>🔍 <strong>Giải thích:</strong> Phép toán Difference là phép toán nhị phân (hoạt động trên hai quan hệ), so sánh và lấy phần tử khác nhau giữa hai tập hợp.<br>💡 <strong>Mẹo:</strong> Chọn phép toán nhị phân khi có sự khác biệt giữa hai tập hợp."
+            },
+            {
+                id: 54,
+                question: "The term \"users\" in a DBMS has a broad meaning. We can divide users into __________.",
+                options: [
+                    "End users and database administrators",
+                    "End users and normal users",
+                    "Application programs and end users",
+                    "Application programs and database administrators"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án: C. Application programs and end users<br>🔍 <strong>Giải thích:</strong> Người dùng trong hệ quản trị cơ sở dữ liệu (DBMS) có thể được chia thành các chương trình ứng dụng và người dùng cuối.<br>💡 <strong>Mẹo:</strong> Chọn đáp án bao gồm cả người dùng là chương trình và người dùng cuối."
+            },
+            {
+                id: 55,
+                question: "Which of the following describes how to protect data by ensuring that information is protected from unauthorized change?",
+                options: [
+                    "Confidentiality",
+                    "Integrity",
+                    "Availability",
+                    "Masquerading"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án: B. Integrity<br>🔍 <strong>Giải thích:</strong> Tính toàn vẹn (integrity) đảm bảo dữ liệu không bị thay đổi trái phép.<br>💡 <strong>Mẹo:</strong> Chọn \"integrity\" khi nói về bảo vệ dữ liệu khỏi sự thay đổi trái phép."
+            },
+            {
+                id: 56,
+                question: "When the ciphertext is received, the receiver must transform the ciphertext back into the plaintext. This is called __________.",
+                options: [
+                    "Plain text",
+                    "Ciphertext",
+                    "Encryption",
+                    "Decryption"
+                ],
+                correct: 3,
+                type: "single",
+                explanation: "Đáp án: D. Decryption<br>🔍 <strong>Giải thích:</strong> Khi nhận được văn bản mã hóa (ciphertext), người nhận phải giải mã (decryption) để chuyển nó trở lại văn bản gốc.<br>💡 <strong>Mẹo:</strong> Chọn \"decryption\" khi đề cập đến việc giải mã dữ liệu."
+            },
+            {
+                id: 57,
+                question: "__________ is an independent program that can copy itself and travels through the network. It tries to find weaknesses in the system to inflict harm.",
+                options: [
+                    "DoS",
+                    "Trojan horses",
+                    "Worms",
+                    "Viruses"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án: C. Worms<br>🔍 <strong>Giải thích:</strong> Worms là chương trình độc hại có khả năng tự sao chép và lan truyền qua mạng, tìm kiếm lỗ hổng trong hệ thống để gây hại.<br>💡 <strong>Mẹo:</strong> Chọn \"worms\" cho chương trình độc hại lan truyền qua mạng."
+            },
+            {
+                id: 58,
+                question: "Sending a virus to a computer is called an __________ attack.",
+                options: [
+                    "Penetration",
+                    "Denial of Service",
+                    "Either a or b",
+                    "Neither a nor b"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "Đáp án: A. Penetration<br>🔍 <strong>Giải thích:</strong> Gửi virus vào máy tính là một hình thức tấn công thâm nhập (penetration attack) nhằm phá vỡ hệ thống bảo mật.<br>💡 <strong>Mẹo:</strong> Chọn \"penetration\" cho việc gửi virus."
+            },
+            {
+                id: 59,
+                question: "In a __________ cipher, the relationship between a character in the plaintext and a character in the ciphertext is one-to-many.",
+                options: [
+                    "Monoalphabetic cipher",
+                    "Substitution cipher",
+                    "Polyalphabetic cipher",
+                    "Transposition cipher"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "Đáp án: C. Polyalphabetic cipher<br>🔍 <strong>Giải thích:</strong> Trong mã hóa đa chữ cái (polyalphabetic cipher), mỗi ký tự trong văn bản gốc có thể được thay thế bởi nhiều ký tự khác nhau trong văn bản mã hóa.<br>💡 <strong>Mẹo:</strong> Chọn \"polyalphabetic\" khi nói đến mã hóa có mối quan hệ một-một-nhiều."
+            },
+            {
+                id: 60,
+                question: "In RSA, if user A wants to send an encrypted message to user B, the plaintext is encrypted with the public key of __________.",
+                options: [
+                    "User A",
+                    "User B",
+                    "The network",
+                    "A third party"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "Đáp án: B. User B<br>🔍 <strong>Giải thích:</strong> Trong RSA, nếu người A muốn gửi tin nhắn mã hóa cho người B, tin nhắn sẽ được mã hóa bằng khóa công khai của người B. Chỉ người B mới có thể giải mã bằng khóa riêng của mình.<br>💡 <strong>Mẹo:</strong> Chọn khóa công khai của người nhận trong RSA."
+            }
+        ];
+
+        let userAnswers = {};
+        let showingAnswers = false;
+        let answeredQuestions = new Set(); 
+
+        function initQuiz() {
+            document.getElementById('totalQuestions').textContent = questions.length;
+            renderAllQuestions();
+            updateScoreSummary();
+        }
+
+        function renderAllQuestions() {
+            const quizContent = document.getElementById('quizContent');
+            
+            quizContent.innerHTML = questions.map(question => `
+                <div class="question-item" id="question-${question.id}">
+                    <div class="question-header">
+                        <div class="question-number">Câu ${question.id}</div>
+                        <div class="question-status" id="status-${question.id}">❓</div>
+                    </div>
+                    
+                    <div class="question-text">${question.question}</div>
+                    
+                    <div class="options-container">
+                        ${question.options.map((option, index) => `
+                            <div class="option-item" onclick="selectOption(${question.id}, ${index})">
+                                ${question.type === 'multiple' ? 
+                                    `<input type="checkbox" class="option-checkbox" id="q${question.id}-opt${index}" onchange="selectOption(${question.id}, ${index})">` :
+                                    `<input type="radio" name="q${question.id}" class="option-radio" id="q${question.id}-opt${index}" onchange="selectOption(${question.id}, ${index})">`
+                                }
+                                <label class="option-text" for="q${question.id}-opt${index}">
+                                    ${String.fromCharCode(65 + index)}. ${option}
+                                </label>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="explanation" id="explanation-${question.id}">
+                        <h4><span class="icon">💡</span>Giải thích:</h4>
+                        <p>${question.explanation}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectOption(questionId, optionIndex) {
+            if (answeredQuestions.has(questionId)) {
+                // Manually trigger the radio button's click to allow visual selection
+                const optionElement = document.getElementById(`q${questionId}-opt${optionIndex}`);
+                if(optionElement.type === 'radio') {
+                    optionElement.checked = true;
+                }
+                return;
+            }
+            
+            const question = questions.find(q => q.id === questionId);
+            const optionElement = document.getElementById(`q${questionId}-opt${optionIndex}`);
+             // Ensure the clicked radio/checkbox is visually updated
+            optionElement.checked = true;
+            
+            if (showingAnswers) return;
+            
+            if (question.type === 'multiple') {
+                if (!userAnswers[questionId]) {
+                    userAnswers[questionId] = [];
+                }
+                const isChecked = Array.from(document.querySelectorAll(`input[id^="q${questionId}-opt"]`)).find(el => el.id.endsWith(optionIndex)).checked;
+                
+                if (isChecked) {
+                    if (!userAnswers[questionId].includes(optionIndex)) {
+                        userAnswers[questionId].push(optionIndex);
+                    }
+                } else {
+                    userAnswers[questionId] = userAnswers[questionId].filter(idx => idx !== optionIndex);
+                }
+                
+                const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
+                if (userAnswers[questionId] && userAnswers[questionId].length === correctAnswers.length) {
+                    answeredQuestions.add(questionId);
+                    disableQuestionOptions(questionId);
+                    showQuestionFeedback(questionId);
+                } else {
+                    hideQuestionFeedback(questionId);
+                }
+            } else {
+                userAnswers[questionId] = optionIndex;
+                answeredQuestions.add(questionId);
+                disableQuestionOptions(questionId);
+                showQuestionFeedback(questionId);
+            }
+            
+            updateQuestionStatus(questionId);
+            updateScoreSummary();
+        }
+
+        function disableQuestionOptions(questionId) {
+            const optionContainers = document.querySelectorAll(`#question-${questionId} .option-item`);
+            optionContainers.forEach(container => {
+                container.style.pointerEvents = 'none';
+                container.style.opacity = '0.7';
+            });
+            const optionElements = document.querySelectorAll(`[id^="q${questionId}-opt"]`);
+            optionElements.forEach(element => {
+                element.disabled = true;
+            });
+        }
+
+        function showQuestionFeedback(questionId) {
+            const question = questions.find(q => q.id === questionId);
+            const explanationElement = document.getElementById(`explanation-${questionId}`);
+            const isCorrect = checkAnswer(questionId);
+            
+            explanationElement.classList.add('show');
+            
+            const optionElements = document.querySelectorAll(`[id^="q${questionId}-opt"]`);
+            optionElements.forEach((element, index) => {
+                const optionContainer = element.parentElement;
+                optionContainer.classList.remove('correct', 'incorrect', 'user-selected', 'user-incorrect');
+                
+                const existingIndicator = optionContainer.querySelector('.answer-indicator');
+                if (existingIndicator) existingIndicator.remove();
+                
+                const userAnswer = userAnswers[questionId];
+                const isUserSelection = question.type === 'multiple' ? (userAnswer && userAnswer.includes(index)) : (userAnswer === index);
+                
+                const isCorrectAnswer = Array.isArray(question.correct) ? question.correct.includes(index) : (index === question.correct);
+
+                if (isCorrectAnswer) {
+                    optionContainer.classList.add('correct');
+                    const indicator = document.createElement('span');
+                    indicator.className = 'answer-indicator correct-indicator';
+                    indicator.textContent = '✓ Đáp án đúng';
+                    if (isUserSelection) {
+                         indicator.textContent = '✓ Đúng';
+                    }
+                    optionContainer.appendChild(indicator);
+                } else if (isUserSelection) {
+                    optionContainer.classList.add('user-incorrect');
+                    const indicator = document.createElement('span');
+                    indicator.className = 'answer-indicator incorrect-indicator';
+                    indicator.textContent = '✗ Sai';
+                    optionContainer.appendChild(indicator);
+                }
+            });
+        }
+        
+        function hideQuestionFeedback(questionId) {
+            document.getElementById(`explanation-${questionId}`).classList.remove('show');
+            
+            const optionElements = document.querySelectorAll(`[id^="q${questionId}-opt"]`);
+            optionElements.forEach((element) => {
+                const optionContainer = element.parentElement;
+                optionContainer.classList.remove('correct', 'incorrect', 'user-selected', 'user-incorrect');
+                const existingIndicator = optionContainer.querySelector('.answer-indicator');
+                if (existingIndicator) existingIndicator.remove();
+            });
+        }
+
+        function updateQuestionStatus(questionId) {
+            const question = questions.find(q => q.id === questionId);
+            const statusElement = document.getElementById(`status-${questionId}`);
+            const questionElement = document.getElementById(`question-${questionId}`);
+            
+            if (answeredQuestions.has(questionId)) {
+                const isCorrect = checkAnswer(questionId);
+                statusElement.textContent = isCorrect ? '✅' : '❌';
+                questionElement.className = `question-item ${isCorrect ? 'answered' : 'incorrect'}`;
+            } else {
+                statusElement.textContent = '❓';
+                questionElement.className = 'question-item';
+            }
+        }
+        
+        function checkAnswer(questionId) {
+            const question = questions.find(q => q.id === questionId);
+            const userAnswer = userAnswers[questionId];
+            
+            if (userAnswer === undefined) return false;
+
+            if (question.type === 'multiple') {
+                const correctAnswers = question.correct;
+                return userAnswer.length === correctAnswers.length && userAnswer.every(ans => correctAnswers.includes(ans)) && correctAnswers.every(ans => userAnswer.includes(ans));
+            } else {
+                return userAnswer === question.correct;
+            }
+        }
+
+        function updateScoreSummary() {
+            const answeredCount = answeredQuestions.size;
+            const correctCount = Array.from(answeredQuestions).filter(qId => checkAnswer(qId)).length;
+            const total = questions.length;
+            const percentage = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+            
+            document.getElementById('answeredCount').textContent = answeredCount;
+            document.getElementById('correctCount').textContent = correctCount;
+            document.getElementById('scorePercentage').textContent = percentage + '%';
+        }
+
+        function showAllAnswers() {
+            showingAnswers = true;
+            questions.forEach(q => {
+                answeredQuestions.add(q.id);
+                disableQuestionOptions(q.id);
+                showQuestionFeedback(q.id);
+                updateQuestionStatus(q.id);
+            });
+            updateScoreSummary();
+        }
+
+        function checkAllAnswers() {
+            showingAnswers = true;
+            questions.forEach(q => {
+                 if (!answeredQuestions.has(q.id)) {
+                    // Mark unanswered questions as incorrect
+                    userAnswers[q.id] = undefined; 
+                    answeredQuestions.add(q.id);
+                 }
+                 disableQuestionOptions(q.id);
+                 showQuestionFeedback(q.id);
+                 updateQuestionStatus(q.id);
+            });
+            updateScoreSummary();
+        }
+
+        function resetQuiz() {
+            userAnswers = {};
+            showingAnswers = false;
+            answeredQuestions.clear();
+            
+            document.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(input => {
+                input.checked = false;
+                input.disabled = false;
+            });
+
+            document.querySelectorAll('.option-item').forEach(option => {
+                option.style.pointerEvents = 'auto';
+                option.style.opacity = '1';
+                option.classList.remove('correct', 'incorrect', 'selected', 'user-selected', 'user-incorrect');
+                const indicator = option.querySelector('.answer-indicator');
+                if (indicator) indicator.remove();
+            });
+            
+            questions.forEach(question => {
+                hideQuestionFeedback(question.id);
+                updateQuestionStatus(question.id);
+            });
+            
+            updateScoreSummary();
+        }
+
+        document.addEventListener('DOMContentLoaded', initQuiz);
+    </script>
+</body>
+</html>

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSI106 - Trung tâm Ôn tập Trắc nghiệm</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 30px 0;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.3em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            font-size: 1.1em;
+            opacity: 0.8;
+        }
+
+        .stats {
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px auto;
+            max-width: 600px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            color: white;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .semester-section {
+            margin-bottom: 40px;
+        }
+
+        .semester-title {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.4em;
+            font-weight: bold;
+            backdrop-filter: blur(10px);
+        }
+
+        .quiz-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .quiz-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quiz-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .quiz-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .quiz-title {
+            font-size: 1.3em;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .quiz-type {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .type-fe {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .type-re {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .type-review {
+            background: #e8f5e8;
+            color: #388e3c;
+        }
+
+        .quiz-info {
+            margin-bottom: 20px;
+        }
+
+        .quiz-description {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .quiz-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            color: #888;
+        }
+
+        .quiz-stats span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .quiz-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9em;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #666;
+            border: 2px solid #e9ecef;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .footer {
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+            margin-top: 40px;
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .footer a {
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.2em;
+            }
+            
+            .quiz-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
+        .icon {
+            font-size: 1.1em;
+        }
+
+        .coming-soon {
+            opacity: 0.6;
+            background: #f5f5f5;
+        }
+
+        .coming-soon .btn-primary {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .search-box {
+            max-width: 500px;
+            margin: 20px auto;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 50px 15px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px);
+        }
+
+        .search-input:focus {
+            outline: none;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🎓 CSI106 Quiz Center</h1>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-number">6</span>
+                    <span class="stat-label">Đề thi có sẵn</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">500+</span>
+                    <span class="stat-label">Câu hỏi</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">100%</span>
+                    <span class="stat-label">Có giải thích</span>
+                </div>
+            </div>
+
+            <div class="search-box">
+                <input type="text" class="search-input" placeholder="Tìm kiếm đề thi..." id="searchInput">
+                <div class="search-icon">🔍</div>
+            </div>
+        </header>
+
+        <main>
+            <!-- FA24 Section -->
+            <section class="semester-section">
+                <div class="semester-title">📚 Học kỳ Fall 2024 (FA24)</div>
+                <div class="quiz-grid">
+                    <div class="quiz-card" data-keywords="fa24 fe 812280 cuối kỳ final">
+                        <div class="quiz-header">
+                            <div class="quiz-title">CSI106 FA24 FE 812280</div>
+                            <div class="quiz-type type-fe">Final Exam</div>
+                        </div>
+                        <div class="quiz-info">
+                            <div class="quiz-description">
+                                Đề thi cuối kỳ Fall 2024 - Bộ câu hỏi ôn tập tổng hợp với 22 câu hỏi chất lượng cao, bao gồm đầy đủ các chủ đề quan trọng của môn học.
+                            </div>
+                            <div class="quiz-stats">
+                                <span><span class="icon">📝</span> 22 câu hỏi</span>
+                                <span><span class="icon">⏱️</span> ~45 phút</span>
+                                <span><span class="icon">🎯</span> Khó</span>
+                            </div>
+                        </div>
+                        <div class="quiz-actions">
+                            <a href="CSI106_FA24_FE_812280_quiz.html" class="btn btn-primary">
+                                <span class="icon">🚀</span> Bắt đầu làm bài
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="quiz-card" data-keywords="fa24 re 505802 thi lại resit">
+                        <div class="quiz-header">
+                            <div class="quiz-title">CSI106 FA24 RE 505802</div>
+                            <div class="quiz-type type-re">Resit Exam</div>
+                        </div>
+                        <div class="quiz-info">
+                            <div class="quiz-description">
+                                Đề thi lại Fall 2024 - Tập hợp câu hỏi ôn tập toàn diện với 60 câu hỏi chi tiết, được thiết kế đặc biệt cho kỳ thi lại.
+                            </div>
+                            <div class="quiz-stats">
+                                <span><span class="icon">📝</span> 60 câu hỏi</span>
+                                <span><span class="icon">⏱️</span> ~90 phút</span>
+                                <span><span class="icon">🎯</span> Trung bình</span>
+                            </div>
+                        </div>
+                        <div class="quiz-actions">
+                            <a href="CSI106_FA24_RE_505802_Quiz.html" class="btn btn-primary">
+                                <span class="icon">🚀</span> Bắt đầu làm bài
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SU25 Section -->
+            <section class="semester-section">
+                <div class="semester-title">☀️ Học kỳ Summer 2025 (SU25)</div>
+                <div class="quiz-grid">
+                    <div class="quiz-card" data-keywords="su25 source ôn tập tổng hợp 202 câu hỏi review">
+                        <div class="quiz-header">
+                            <div class="quiz-title">CSI106 SU25 - Source Tổng hợp</div>
+                            <div class="quiz-type type-review">Review</div>
+                        </div>
+                        <div class="quiz-info">
+                            <div class="quiz-description">
+                                Bộ đề ôn tập tổng hợp SU25 - Tập hợp 202 câu hỏi trắc nghiệm từ source file, bao gồm đầy đủ các chủ đề quan trọng để chuẩn bị cho kỳ thi.
+                            </div>
+                            <div class="quiz-stats">
+                                <span><span class="icon">📝</span> 202 câu hỏi</span>
+                                <span><span class="icon">⏱️</span> ~150 phút</span>
+                                <span><span class="icon">🎯</span> Tổng hợp</span>
+                            </div>
+                        </div>
+                        <div class="quiz-actions">
+                            <a href="Source_CSI_SU25.html" class="btn btn-primary">
+                                <span class="icon">🚀</span> Bắt đầu làm bài
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SU24 Section -->
+            <section class="semester-section">
+                <div class="semester-title">🌞 Học kỳ Summer 2024 (SU24)</div>
+                <div class="quiz-grid">
+                    <div class="quiz-card" data-keywords="su24 b5fe 688447 final exam">
+                        <div class="quiz-header">
+                            <div class="quiz-title">CSI106 SU24 B5FE 688447</div>
+                            <div class="quiz-type type-fe">Final Exam</div>
+                        </div>
+                        <div class="quiz-info">
+                            <div class="quiz-description">
+                                Đề thi cuối kỳ Summer 2024 Block 5 - Bộ đề ôn tập với 60 câu hỏi đa dạng, phù hợp cho việc chuẩn bị kỳ thi cuối kỳ.
+                            </div>
+                            <div class="quiz-stats">
+                                <span><span class="icon">📝</span> 60 câu hỏi</span>
+                                <span><span class="icon">⏱️</span> ~90 phút</span>
+                                <span><span class="icon">🎯</span> Khó</span>
+                            </div>
+                        </div>
+                        <div class="quiz-actions">
+                            <a href="CSI106_SU24_B5FE_688447_Quiz.html" class="btn btn-primary">
+                                <span class="icon">🚀</span> Bắt đầu làm bài
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="quiz-card" data-keywords="su24 fe 648742 final exam">
+                        <div class="quiz-header">
+                            <div class="quiz-title">CSI106 SU24 FE 648742</div>
+                            <div class="quiz-type type-fe">Final Exam</div>
+                        </div>
+                        <div class="quiz-info">
+                            <div class="quiz-description">
+                                Đề thi cuối kỳ Summer 2024 - Bộ câu hỏi ôn tập với 60 câu trắc nghiệm bao quát toàn bộ chương trình học của môn CSI106.
+                            </div>
+                            <div class="quiz-stats">
+                                <span><span class="icon">📝</span> 60 câu hỏi</span>
+                                <span><span class="icon">⏱️</span> ~90 phút</span>
+                                <span class="icon">🎯</span> Trung bình</span>
+                            </div>
+                        </div>
+                        <div class="quiz-actions">
+                            <a href="CSI106_SU24_FE_648742_Quiz.html" class="btn btn-primary">
+                                <span class="icon">🚀</span> Bắt đầu làm bài
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="quiz-card" data-keywords="su24 re 811090 resit thi lại">
+                        <div class="quiz-header">
+                            <div class="quiz-title">CSI106 SU24 RE 811090</div>
+                            <div class="quiz-type type-re">Resit Exam</div>
+                        </div>
+                        <div class="quiz-info">
+                            <div class="quiz-description">
+                                Đề thi lại Summer 2024 - Bộ đề ôn tập đặc biệt với 60 câu hỏi được tuyển chọn kỹ lưỡng, phù hợp cho kỳ thi lại.
+                            </div>
+                            <div class="quiz-stats">
+                                <span><span class="icon">📝</span> 60 câu hỏi</span>
+                                <span><span class="icon">⏱️</span> ~90 phút</span>
+                                <span><span class="icon">🎯</span> Trung bình</span>
+                            </div>
+                        </div>
+                        <div class="quiz-actions">
+                            <a href="CSI106_SU24_RE_811090_Quiz.html" class="btn btn-primary">
+                                <span class="icon">🚀</span> Bắt đầu làm bài
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const quizCards = document.querySelectorAll('.quiz-card');
+            
+            quizCards.forEach(card => {
+                const keywords = card.getAttribute('data-keywords') || '';
+                const title = card.querySelector('.quiz-title').textContent.toLowerCase();
+                const description = card.querySelector('.quiz-description').textContent.toLowerCase();
+                
+                const isMatch = keywords.includes(searchTerm) || 
+                               title.includes(searchTerm) || 
+                               description.includes(searchTerm);
+                
+                if (isMatch || searchTerm === '') {
+                    card.style.display = 'block';
+                    card.style.animation = 'fadeIn 0.3s ease';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        // Add fade in animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Add smooth scrolling for better UX
+        document.addEventListener('DOMContentLoaded', function() {
+            const quizCards = document.querySelectorAll('.quiz-card');
+            quizCards.forEach((card, index) => {
+                card.style.animation = `fadeIn 0.6s ease ${index * 0.1}s both`;
+            });
+        });
+
+        // Track quiz access (you can extend this for analytics)
+        document.querySelectorAll('.btn-primary').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const quizTitle = this.closest('.quiz-card').querySelector('.quiz-title').textContent;
+                console.log(`Quiz accessed: ${quizTitle}`);
+                // You can add analytics tracking here
+            });
+        });
+    </script>
+</body>
+</html>

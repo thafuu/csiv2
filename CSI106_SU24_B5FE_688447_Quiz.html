@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Quiz - CSI106_SU24_B5FE_688447</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .quiz-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .quiz-header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .quiz-header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .score-summary {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-number {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .score-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .quiz-content {
+            padding: 40px;
+        }
+
+        .question-item {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .question-item.answered {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+
+        .question-item.incorrect {
+            border-color: #dc3545;
+            background: #fff8f8;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .question-number {
+            background: #667eea;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .question-status {
+            font-size: 1.2em;
+        }
+
+        .question-text {
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            color: #333;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+
+        .options-container {
+            margin-bottom: 15px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            background: white;
+            margin: 8px 0;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .option-item:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .option-item.selected {
+            border-color: #667eea;
+            background: #e3f2fd;
+        }
+
+        .option-item.correct {
+            border-color: #28a745;
+            background: #d4edda;
+            color: #155724;
+            font-weight: bold;
+        }
+
+        .option-item.incorrect {
+            border-color: #dc3545;
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .option-item.user-selected {
+            border-color: #007bff;
+            background: #cce7ff;
+            font-weight: bold;
+        }
+
+        .option-item.user-incorrect {
+            border-color: #dc3545;
+            background: #f8d7da;
+            color: #721c24;
+            text-decoration: line-through;
+        }
+
+        .answer-indicator {
+            margin-left: 10px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .correct-indicator {
+            color: #28a745;
+        }
+
+        .incorrect-indicator {
+            color: #dc3545;
+        }
+
+        .explanation {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .explanation.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .explanation h4 {
+            color: #856404;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            font-size: 1em;
+        }
+
+        .explanation p {
+            color: #533f04;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .action-buttons {
+            background: white;
+            padding: 20px 40px;
+            border-top: 2px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .icon {
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="quiz-header">
+            <h1>Quiz CSI106_SU24_B5FE_688447</h1>
+            <p>Đề thi trắc nghiệm môn Tin học đại cương</p>
+            <div class="score-summary">
+                <div class="score-item">
+                    <div class="score-number" id="totalQuestions">0</div>
+                    <div class="score-label">Tổng câu</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-number" id="answeredCount">0</div>
+                    <div class="score-label">Đã trả lời</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-number" id="correctCount">0</div>
+                    <div class="score-label">Đúng</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-number" id="scorePercentage">0%</div>
+                    <div class="score-label">Điểm số</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="quiz-content" id="quizContent">
+            <!-- Questions will be dynamically inserted here -->
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-secondary" onclick="resetQuiz()">
+                🔄 Làm lại toàn bộ
+            </button>
+            <div>
+                <button class="btn btn-primary" onclick="showAllAnswers()">
+                    👁️ Hiện tất cả đáp án
+                </button>
+                <button class="btn btn-success" onclick="checkAllAnswers()">
+                    ✅ Kiểm tra kết quả
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                id: 1,
+                question: "………..separated the programming task from computer operation tasks.",
+                options: [
+                    "Algorithms",
+                    "Data processors",
+                    "High-level programming languages",
+                    "Operating systems"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "C (High-level programming languages)<br>✅ Giải thích: Ngôn ngữ lập trình bậc cao giúp lập trình viên tập trung vào logic mà không cần thao tác trực tiếp với phần cứng, giúp tách biệt việc lập trình khỏi vận hành máy tính.<br>💡 Mẹo: Khi gặp câu hỏi về sự tách biệt giữa lập trình và phần cứng, hãy nghĩ đến ngôn ngữ lập trình bậc cao hoặc hệ điều hành."
+            },
+            {
+                id: 2,
+                question: "THE(A) 17th-century computing machine that could perform addition and subtraction was the……",
+                options: [
+                    "Pascaline",
+                    "Jacquard loom",
+                    "Analytical Engine",
+                    "Babbage machine"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "A (Pascaline)<br>✅ Giải thích: Pascaline là một máy tính cơ học do Blaise Pascal phát minh vào thế kỷ 17, có thể thực hiện phép cộng và trừ.<br>💡 Mẹo:<br>● Pascaline → Máy tính cơ học đầu tiên (phép cộng, trừ).<br>● Jacquard Loom → Máy dệt vải tự động bằng thẻ đục lỗ.<br>● Analytical Engine → Thiết kế máy tính tự động đầu tiên của Babbage."
+            },
+            {
+                id: 3,
+                question: "After the instruction is decoded, the control unit sends the task order to a component in the CPU. What is this phase?",
+                options: [
+                    "Fetch phase",
+                    "Decode phase",
+                    "Execute phase",
+                    "None of the others"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "C (Execute phase)<br>✅ Giải thích: Giai đoạn thực thi (Execute phase) là khi CPU thực hiện lệnh đã giải mã, gửi tín hiệu đến các thành phần khác để hoàn thành nhiệm vụ.<br>💡 Mẹo: Nhớ chu trình Fetch → Decode → Execute:<br>● Fetch (Nạp): Lấy lệnh từ bộ nhớ.<br>● Decode (Giải mã): Phân tích lệnh.<br>● Execute (Thực thi): Thực hiện lệnh."
+            },
+            {
+                id: 4,
+                question: "RAM is used as a short memory because it is",
+                options: [
+                    "Volatile",
+                    "Has small capacity",
+                    "Is very expensive",
+                    "Is programmable",
+                    "None of the others"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "A (Volatile)<br>✅ Giải thích: RAM là bộ nhớ tạm thời (volatile memory), nghĩa là dữ liệu sẽ mất khi tắt máy.<br>💡 Mẹo: Nếu câu hỏi hỏi tại sao RAM chỉ lưu trữ tạm thời, hãy nhớ từ khóa \"volatile\"."
+            },
+            {
+                id: 5,
+                question: "For surface organization of magnetic tape, the width of the tape is divided into nine tracks. Nine vertical locations can store 8 bits of information related to a byte plus a bit for……",
+                options: [
+                    "Next block",
+                    "Data",
+                    "Next tape information",
+                    "Error detection"
+                ],
+                correct: 3,
+                type: "single",
+                explanation: "D (Error detection)<br>✅ Giải thích: Trong băng từ, 9 track bao gồm 8 bit dữ liệu + 1 bit kiểm tra lỗi (parity bit) để phát hiện lỗi.<br>💡 Mẹo: Khi thấy câu hỏi về tổ chức dữ liệu trên băng từ, hãy nhớ bit kiểm tra lỗi (error detection bit)."
+            },
+            {
+                id: 6,
+                question: "IBM-PC is an example of",
+                options: [
+                    "A mainframe",
+                    "Machine-in-built",
+                    "Microcomputer",
+                    "Special purpose",
+                    "None of the others"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "C (Microcomputer)<br>✅ Giải thích: IBM-PC là một máy tính cá nhân (PC), thuộc nhóm microcomputer vì nó nhỏ gọn và dành cho cá nhân.<br>💡 Mẹo:<br>● Mainframe → Máy tính lớn dùng cho doanh nghiệp.<br>● Microcomputer → Máy tính cá nhân như PC, laptop."
+            },
+            {
+                id: 7,
+                question: "Instructions and memory addresses are represented by",
+                options: [
+                    "Character codes",
+                    "Binary codes",
+                    "Binary word",
+                    "Parity bit",
+                    "None of the others"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "B (Binary codes)<br>✅ Giải thích: Máy tính chỉ hiểu được mã nhị phân (binary codes: 0 và 1) để biểu diễn lệnh và địa chỉ bộ nhớ.<br>💡 Mẹo: Nếu câu hỏi hỏi về cách máy tính biểu diễn lệnh, hãy chọn binary (nhị phân)."
+            },
+            {
+                id: 8,
+                question: "Computers are extremely fast and have fantastic memories. However, the only thing they can remember is",
+                options: [
+                    "Instruction",
+                    "Series of 1s and 0s",
+                    "Boolean algebra",
+                    "Logic theorems",
+                    "None of the others"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "B (Series of 1s and 0s)<br>✅ Giải thích: Máy tính chỉ có thể nhớ và xử lý dữ liệu dưới dạng dãy số nhị phân (1s và 0s).<br>💡 Mẹo: Khi thấy từ khóa \"máy tính nhớ gì\", hãy chọn dãy nhị phân (binary series)."
+            },
+            {
+                id: 9,
+                question: "Which of the following is equivalent to 12 in decimal?",
+                options: [
+                    "(1110)2",
+                    "(C)16",
+                    "(15)8",
+                    "None of the others"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "B ((C)16)<br>✅ Giải thích: Số 12 trong hệ thập phân (decimal) = C trong hệ thập lục phân (hexadecimal).<br>💡 Mẹo:<br>● A = 10, B = 11, C = 12, … trong hệ 16."
+            },
+            {
+                id: 10,
+                question: "A group containing…… bits in the binary system are represented as one digit in the octal system.",
+                options: [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "None of the others"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "C (3 bits)<br>✅ Giải thích: Trong hệ bát phân (octal), mỗi chữ số được biểu diễn bằng 3 bit (vì 2³ = 8).<br>💡 Mẹo: Nếu hỏi về chuyển đổi giữa nhị phân và bát phân, nhớ rằng 1 chữ số octal = 3 bit binary."
+            },
+            {
+                id: 11,
+                question: "Conversion of binary number 1010101000010111 to hexadecimal number is….",
+                options: [
+                    "D8F9",
+                    "A8B9",
+                    "AA17",
+                    "D9F8",
+                    "None of the others"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "C (AA17)<br>✅ Giải thích: Chuyển đổi 1010 1010 0001 0111 sang hex:<br>● 1010 = A<br>● 1010 = A<br>● 0001 = 1<br>● 0111 = 7<br>💡 Mẹo: Nhóm 4 bit lại và đổi sang hệ hex."
+            },
+            {
+                id: 12,
+                question: "What is the result of storing -25 in an 8-bit memory location using two's complement representation?",
+                options: [
+                    "00011001",
+                    "00110010",
+                    "11100111",
+                    "11110010"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "C (11100111)<br>✅ Giải thích: Số -25 trong hệ hai bù (two’s complement) trên 8 bit là 11100111.<br>💡 Mẹo: Cách tìm số âm trong two’s complement:<br>1. Đổi số dương sang nhị phân.<br>2. Đảo bit (0 thành 1, 1 thành 0).<br>3. Cộng thêm 1."
+            },
+            {
+                id: 13,
+                question: "The ASCII code for the character J is:",
+                options: [
+                    "1001 0001",
+                    "1001 1010",
+                    "0100 1010",
+                    "1010 0001",
+                    "None of the others"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "C (0100 1010)<br>✅ Giải thích: ASCII của chữ J là 0100 1010 (74 trong decimal).<br>💡 Mẹo: Nếu hỏi về ASCII, có thể tra bảng mã hoặc nhớ các ký tự phổ biến như A=65, B=66,... J=74."
+            },
+            {
+                id: 14,
+                question: "If we call the bit depth or number of bits per sample B, the number of samples per second S, so how to calculate BIT RATE (R)?",
+                options: [
+                    "B × 2S",
+                    "2B × S",
+                    "B × S",
+                    "B² × S²"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "C (B × S)<br>✅ Giải thích: Bit rate = Bit depth × Sample rate.<br>💡 Mẹo: Khi gặp công thức bit rate, hãy nhớ B × S."
+            },
+            {
+                id: 15,
+                question: "In the….. graphic method of representing an image in a computer, re-scaling of the image creates a ragged or grainy image.",
+                options: [
+                    "Bitmap",
+                    "Vector",
+                    "Quantized",
+                    "Binary"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "A (Bitmap)<br>✅ Giải thích: Ảnh bitmap có độ phân giải cố định, khi phóng to sẽ bị răng cưa (pixelated).<br>💡 Mẹo: Nếu hỏi về ảnh bị vỡ khi zoom, chọn bitmap."
+            },
+            {
+                id: 16,
+                question: "Use an arithmetic right shift operation on the bit pattern 1001 1000",
+                options: [
+                    "0100 1100",
+                    "1100 1100",
+                    "1101 1001",
+                    "1001 1000"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "B (1100 1100)<br>✅ Giải thích: Dịch phải số học giữ nguyên bit dấu (MSB).<br>💡 Mẹo: Nếu dịch phải số học, bit dấu giữ nguyên."
+            },
+            {
+                id: 17,
+                question: "Use a simple left shift operation on the bit pattern 1001 1000",
+                options: [
+                    "0001 1001",
+                    "0001 1010",
+                    "0011 0000",
+                    "0011 0001"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "C (0011 0000)<br>✅ Giải thích: Dịch trái đơn giản dịch tất cả bit sang trái 1 lần.<br>💡 Mẹo: Khi dịch trái, số nhân đôi (x2)."
+            },
+            {
+                id: 18,
+                question: "Which physical topology uses a hub or switch?",
+                options: [
+                    "Bus",
+                    "Ring",
+                    "Star",
+                    "Bus and ring"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "C (Star)<br>✅ Giải thích: Mạng hình sao (Star) dùng hub/switch làm trung tâm.<br>💡 Mẹo: Nếu có hub/switch → chọn star topology."
+            },
+            {
+                id: 19,
+                question: "The TCP/IP model has ….layers.",
+                options: [
+                    "Five",
+                    "Six",
+                    "Seven",
+                    "Eight"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "A (Five)<br>✅ Giải thích: Mô hình TCP/IP có 5 tầng:<br>1. Physical<br>2. Data Link<br>3. Network<br>4. Transport<br>5. Application<br>💡 Mẹo: Nếu hỏi về TCP/IP, nhớ 5 tầng."
+            },
+            {
+                id: 20,
+                question: "The format of an IPv6 address is referred to as……",
+                options: [
+                    "Dotted-hexadecimal notation",
+                    "Dotted-octal notation",
+                    "Dotted-decimal notation",
+                    "8- Hexadecimal digits"
+                ],
+                correct: 3,
+                type: "single",
+                explanation: "D (8-Hexadecimal digits)<br>✅ Giải thích: Địa chỉ IPv6 có 8 nhóm số hệ 16 (hexadecimal).<br>💡 Mẹo: IPv4 có dotted decimal, IPv6 dùng hexadecimal notation."
+            },
+            {
+                id: 21,
+                question: "…..explicitly defines connection establishment, data transfer, connection teardown phases to provide a connection-oriented service AND reliable protocol.",
+                options: [
+                    "TCP",
+                    "UDP",
+                    "IP",
+                    "HTTP"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "A (TCP - Transmission Control Protocol)<br>✅ Giải thích: TCP là giao thức hướng kết nối (connection-oriented) và đáng tin cậy (reliable). Nó có ba giai đoạn chính:<br>1. Thiết lập kết nối (Connection establishment - Three-way handshake)<br>2. Truyền dữ liệu (Data transfer)<br>3. Đóng kết nối (Connection teardown)<br>💡 Mẹo: Nếu câu hỏi nhắc đến \"connection-oriented\" hoặc \"reliable\", chọn TCP."
+            },
+            {
+                id: 22,
+                question: "In a …. the directory system listing of the peers and what they offer uses the client-server paradigm, but the storing and downloading of the files are done using the peer-to-peer paradigm.",
+                options: [
+                    "WWW",
+                    "Centralized network",
+                    "Hybrid network",
+                    "Decentralized network"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "C (Hybrid network)<br>✅ Giải thích: Mạng lai (Hybrid Network) kết hợp giữa mô hình Client-Server để quản lý danh sách các peers và mô hình P2P để truyền tải dữ liệu.<br>💡 Mẹo: Nếu thấy kết hợp Client-Server và P2P, chọn Hybrid Network."
+            },
+            {
+                id: 23,
+                question: "THE(A) memory that does not change its contents without external causes is known as",
+                options: [
+                    "Dynamic memory",
+                    "Static memory",
+                    "RAM",
+                    "EEPROM",
+                    "None of the others"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "B (Static memory)<br>✅ Giải thích: Static Memory (bộ nhớ tĩnh) không thay đổi nội dung nếu không có tác động bên ngoài. Ví dụ: SRAM giữ dữ liệu mà không cần làm tươi liên tục như DRAM.<br>💡 Mẹo: Nếu câu hỏi nói về bộ nhớ giữ nguyên nội dung mà không cần refresh, chọn Static Memory."
+            },
+            {
+                id: 24,
+                question: "Which of the following is the user-programmed semiconductor memory?",
+                options: [
+                    "SRAM",
+                    "DRAM",
+                    "EPROM",
+                    "All of the others",
+                    "None of the others"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "C (EPROM - Erasable Programmable ROM)<br>✅ Giải thích: EPROM là bộ nhớ bán dẫn có thể lập trình bởi người dùng và có thể xóa bằng tia UV.<br>💡 Mẹo: Nếu hỏi về bộ nhớ do người dùng lập trình, chọn EPROM."
+            },
+            {
+                id: 25,
+                question: "Which of the following holds data and processing instructions temporarily until the CPU needs it?",
+                options: [
+                    "ROM",
+                    "Control unit",
+                    "Main memory",
+                    "Coprocessor chips",
+                    "None of the others"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "C (Main memory)<br>✅ Giải thích: Bộ nhớ chính (RAM) giữ dữ liệu và lệnh tạm thời để CPU xử lý.<br>💡 Mẹo: Nếu câu hỏi nhắc đến \"temporarily hold data until CPU needs it\", chọn Main Memory (RAM)."
+            },
+            {
+                id: 26,
+                question: "THE(A) …. is a program in execution. It is a program that has started but has not finished.",
+                options: [
+                    "Program",
+                    "Job",
+                    "Process",
+                    "Task"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "C (Process)<br>✅ Giải thích: Process là chương trình đang thực thi (đã nạp vào bộ nhớ và đang chạy).<br>💡 Mẹo: Nếu hỏi về \"program in execution\", chọn Process."
+            },
+            {
+                id: 27,
+                question: "What kind of state does a process execute until it needs I/O resources when I/O is complete?",
+                options: [
+                    "Hold state",
+                    "Ready state",
+                    "Running state",
+                    "Waiting state"
+                ],
+                correct: 3,
+                type: "single",
+                explanation: "D (Waiting state)<br>✅ Giải thích: Một tiến trình chuyển sang trạng thái chờ (Waiting state) khi cần tài nguyên I/O.<br>💡 Mẹo: Nếu câu hỏi đề cập đến \"needs I/O resources\", chọn Waiting State."
+            },
+            {
+                id: 28,
+                question: "……is a step-by-step method for solving a problem or doing a task.",
+                options: [
+                    "A construct",
+                    "A recursion",
+                    "An iteration",
+                    "An algorithm"
+                ],
+                correct: 3,
+                type: "single",
+                explanation: "D (Algorithm)<br>✅ Giải thích: Thuật toán (Algorithm) là tập hợp các bước cụ thể để giải quyết vấn đề.<br>💡 Mẹo: Nếu hỏi về \"step-by-step method\", chọn Algorithm."
+            },
+            {
+                id: 29,
+                question: "…….hides all the details of an algorithm in an attempt to give the 'big picture' and to show how the algorithm flows from beginning to end.",
+                options: [
+                    "Pseudocode",
+                    "Unified Modeling Language (UML)",
+                    "Flowchart",
+                    "State diagram"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "(file là C (Flowchart), slide Unified Modeling Language (UML) is a pictorial representation of an algorithm. It hides all the details of an algorithm in an attempt to give the ‘big picture’ and to show how the algorithm flows from beginning to end. "
+            },
+            {
+                id: 30,
+                question: "—-----is a process in which an algorithm calls itself.",
+                options: [
+                    "Insertion",
+                    "Searching",
+                    "Recursion",
+                    "Iteration"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "C (Recursion)<br>✅ Giải thích: Recursion là khi một hàm gọi chính nó để giải quyết bài toán.<br>💡 Mẹo: Nếu gặp \"algorithm calls itself\", chọn Recursion."
+            },
+            {
+                id: 31,
+                question: "In….. unsorted list.sort, the smallest item from the unsorted list is swapped with the item at the beginning of the list.",
+                options: [
+                    "Selection",
+                    "Bubble",
+                    "Insertion",
+                    "Every"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "A (Selection Sort)<br>✅ Giải thích: Selection Sort tìm phần tử nhỏ nhất trong danh sách chưa sắp xếp và hoán đổi với phần tử đầu tiên.<br>💡 Mẹo: Nếu hỏi về thuật toán \"tìm phần tử nhỏ nhất rồi hoán đổi\", chọn Selection Sort."
+            },
+            {
+                id: 32,
+                question: "The program in a high-level language is called the…..",
+                options: [
+                    "Programming language",
+                    "Source program",
+                    "Translation",
+                    "Interpretation"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "B (Source Program)<br>✅ Giải thích: Source Program là mã chương trình được viết bằng ngôn ngữ lập trình bậc cao.<br>💡 Mẹo: Nếu câu hỏi nói về chương trình được viết bằng ngôn ngữ lập trình, chọn Source Program."
+            },
+            {
+                id: 33,
+                question: "The code that should be adequate for present and anticipated data processing both for machine and human use is",
+                options: [
+                    "Conciseness",
+                    "Uniqueness",
+                    "Operability",
+                    "All of the others",
+                    "None of the others"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "C (Operability)<br>✅ Giải thích: Operability đảm bảo mã có thể hoạt động tốt trên máy và con người có thể hiểu được.<br>💡 Mẹo: Nếu câu hỏi nói về tính hiệu quả cho cả máy và con người, chọn Operability."
+            },
+            {
+                id: 34,
+                question: "In the —-- we can think of a program as an active agent that manipulates passive objects.",
+                options: [
+                    "Procedural paradigm",
+                    "Functional paradigm",
+                    "Declarative paradigm",
+                    "Object-oriented paradigm"
+                ],
+                correct: 3,
+                type: "single",
+                explanation: "D (Object-oriented paradigm)<br>✅ Giải thích: Lập trình hướng đối tượng (OOP) coi chương trình là tác nhân thao tác trên các đối tượng.<br>💡 Mẹo: Nếu câu hỏi nhắc đến \"active agent manipulates passive objects\", chọn OOP."
+            },
+            {
+                id: 35,
+                question: "—---are names for memory locations.",
+                options: [
+                    "Variables",
+                    "Imperative language",
+                    "Identifiers",
+                    "Data type"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "A (Variables)<br>✅ Giải thích: Biến (Variable) là tên dùng để lưu trữ dữ liệu trong bộ nhớ.<br>💡 Mẹo: Nếu câu hỏi nhắc đến \"names for memory locations\", chọn Variable."
+            },
+            {
+                id: 36,
+                question: "THE(A) ……gives the user's view of a system: it shows how the user communicates with the system.",
+                options: [
+                    "Class diagram",
+                    "State diagram",
+                    "Use-case diagram",
+                    "Sequence diagram"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "C (Use-case diagram)<br>✅ Giải thích: Use-case diagram thể hiện cách người dùng tương tác với hệ thống.<br>💡 Mẹo: Nếu câu hỏi nhắc đến \"user's view of a system\", chọn Use-case diagram."
+            },
+            {
+                id: 37,
+                question: "One phase in system development is……",
+                options: [
+                    "Analysis",
+                    "Application",
+                    "Designing",
+                    "Collecting"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "A (Analysis)<br>✅ Giải thích: Phân tích (Analysis) là bước đầu tiên trong phát triển hệ thống.<br>💡 Mẹo: Nếu câu hỏi hỏi về \"giai đoạn trong phát triển hệ thống\", chọn Analysis."
+            },
+            {
+                id: 38,
+                question: "……between modules in a software system must be maximized.",
+                options: [
+                    "Coupling",
+                    "Cohesion",
+                    "Neither coupling nor cohesion",
+                    "Both coupling and cohesion"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "B (Cohesion)<br>✅ Giải thích: Cohesion là mức độ liên kết bên trong module và nên tối đa hóa để có code chặt chẽ hơn.<br>💡 Mẹo: Nếu câu hỏi hỏi về \"cái cần tối đa hóa trong module\", chọn Cohesion."
+            },
+            {
+                id: 39,
+                question: "What is quality referring to the ability to move software from one hardware platform to another?",
+                options: [
+                    "Flexibility",
+                    "Interoperability",
+                    "Reusability",
+                    "Changeability"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "B (Interoperability)<br>✅ Giải thích: Interoperability giúp phần mềm có thể chuyển đổi giữa các nền tảng phần cứng khác nhau.<br>💡 Mẹo: Nếu câu hỏi nhắc đến \"di chuyển phần mềm từ phần cứng này sang phần cứng khác\", chọn Interoperability."
+            },
+            {
+                id: 40,
+                question: "Testing a software system can involve….. testing.",
+                options: [
+                    "Black-box",
+                    "Glass-box",
+                    "Neither black-box nor glass-box",
+                    "Both black-box and glass-box"
+                ],
+                correct: 3,
+                type: "single",
+                explanation: "D (Both black-box and glass-box testing)<br>✅ Giải thích:<br>● Black-box testing kiểm tra đầu vào và đầu ra, không quan tâm đến mã nguồn.<br>● Glass-box testing kiểm tra cấu trúc nội bộ của mã nguồn.<br>💡 Mẹo: Nếu hỏi về các phương pháp kiểm thử, chọn \"Both black-box and glass-box testing\" để bao quát hết các phương pháp."
+            },
+            {
+                id: 41,
+                question: "THE(A) data structure can be …..",
+                options: [
+                    "Only an array",
+                    "Only a record",
+                    "Only a linked list",
+                    "An array, a record, or a linked list"
+                ],
+                correct: 3,
+                type: "single",
+                explanation: "D (An array, a record, or a linked list)<br>✅ Giải thích: Cấu trúc dữ liệu có thể là mảng (array), bản ghi (record) hoặc danh sách liên kết (linked list).<br>💡 Mẹo: Nếu hỏi về các loại cấu trúc dữ liệu, chọn câu có nhiều lựa chọn nhất."
+            },
+            {
+                id: 42,
+                question: "THE(A) …..is a collection of related elements possibly of different types having a single name.",
+                options: [
+                    "Array",
+                    "Record",
+                    "Linked list",
+                    "Tree"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "B (Record)<br>✅ Giải thích: Record là tập hợp các phần tử có thể khác kiểu dữ liệu nhưng có cùng một tên.<br>💡 Mẹo: Nếu câu hỏi nói về \"related elements of different types\", chọn Record."
+            },
+            {
+                id: 43,
+                question: "Given a linked list called children, the pointer variable children identifies……. element of the linked list.",
+                options: [
+                    "The first",
+                    "The second",
+                    "The last",
+                    "Any"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "A (The first)<br>✅ Giải thích: Con trỏ của danh sách liên kết thường trỏ đến phần tử đầu tiên của danh sách.<br>💡 Mẹo: Nếu hỏi về con trỏ danh sách liên kết, chọn \"The first\"."
+            },
+            {
+                id: 44,
+                question: "Inside the ADT are two different parts of the model that are…… and….",
+                options: [
+                    "Data structure and operations",
+                    "Application program and public operations",
+                    "Application program and private operations",
+                    "Data structure and application program"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "A (Data structure and operations)<br>✅ Giải thích: Một ADT (Abstract Data Type) gồm cấu trúc dữ liệu và các thao tác trên dữ liệu đó.<br>💡 Mẹo: Nếu câu hỏi về ADT, chọn Data structure and operations."
+            },
+            {
+                id: 45,
+                question: "The—- of each node includes one of its children and all descendants of that child.",
+                options: [
+                    "Left tree",
+                    "Binary tree",
+                    "Subtree",
+                    "Right tree"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "C (Subtree)<br>✅ Giải thích: Subtree của một nút bao gồm một trong các con của nó và tất cả các hậu duệ của con đó.<br>💡 Mẹo: Nếu hỏi về một phần cây con, chọn Subtree."
+            },
+            {
+                id: 46,
+                question: "The enqueue operation….. an item at the……. of the queue.",
+                options: [
+                    "Delete/front",
+                    "Delete/end",
+                    "Inserts/front",
+                    "Insert/rear"
+                ],
+                correct: 3,
+                type: "single",
+                explanation: "D (Insert/rear)<br>✅ Giải thích: Hàng đợi (Queue) có nguyên tắc FIFO, chèn vào cuối (rear) và lấy ra từ đầu (front).<br>💡 Mẹo: Nếu câu hỏi về enqueue, chọn Insert/rear."
+            },
+            {
+                id: 47,
+                question: "A—- is a collection of data stored in the internal format of the computer. This contains data that is meaningful only if it is properly interpreted by a program.",
+                options: [
+                    "Text file",
+                    "Binary file",
+                    "Sequential file",
+                    "EOF"
+                ],
+                correct: 1,
+                type: "single",
+                explanation: "B (Binary file)<br>✅ Giải thích: Binary file lưu trữ dữ liệu dưới dạng mã nhị phân, chỉ có ý nghĩa khi được chương trình diễn giải.<br>💡 Mẹo: Nếu nói về \"data in internal format\", chọn Binary file."
+            },
+            {
+                id: 48,
+                question: "When a sequential file is updated, the ….file contains a list of all errors occurring during the update process.",
+                options: [
+                    "New master",
+                    "Old master",
+                    "Transaction",
+                    "Error report"
+                ],
+                correct: 3,
+                type: "single",
+                explanation: "D (Error report)<br>✅ Giải thích: Khi cập nhật tập tin tuần tự (sequential file), tất cả lỗi được ghi vào Error report file.<br>💡 Mẹo: Nếu hỏi về file ghi lỗi trong quá trình cập nhật, chọn Error report."
+            },
+            {
+                id: 49,
+                question: "When a hashing algorithm produces an address for an insertion key and that address is already occupied, it is called a……",
+                options: [
+                    "Collision",
+                    "Probe",
+                    "Synonym",
+                    "Linked list"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "A (Collision)<br>✅ Giải thích: Khi một hashing algorithm tạo địa chỉ bị trùng với một khóa khác, đó gọi là Collision.<br>💡 Mẹo: Nếu gặp từ \"hashing\" và \"address is already occupied\", chọn Collision."
+            },
+            {
+                id: 50,
+                question: "The intersection of a column and row in a spreadsheet is called a… or",
+                options: [
+                    "Key",
+                    "Field",
+                    "Cell",
+                    "Menu",
+                    "None of the others"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "C (Cell)<br>✅ Giải thích: Cell là giao điểm của hàng và cột trong bảng tính.<br>💡 Mẹo: Nếu hỏi về ô trong bảng tính, chọn Cell."
+            },
+            {
+                id: 51,
+                question: "In the network database model, the entities are organized in a….. through several paths in which some entities can be accessed.",
+                options: [
+                    "Graph",
+                    "Tree",
+                    "Array",
+                    "Record"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "A (Graph)<br>✅ Giải thích: Mô hình cơ sở dữ liệu mạng (Network Database Model) sử dụng đồ thị (Graph) để tổ chức dữ liệu.<br>💡 Mẹo: Nếu hỏi về mô hình cơ sở dữ liệu mạng, chọn Graph."
+            },
+            {
+                id: 52,
+                question: "Each column in a relation is called…..",
+                options: [
+                    "An attribute",
+                    "A tuple",
+                    "A union",
+                    "An attitude"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "A (An attribute)<br>✅ Giải thích: Trong cơ sở dữ liệu quan hệ, cột (column) được gọi là attribute.<br>💡 Mẹo: Nếu hỏi về cột trong bảng quan hệ, chọn Attribute."
+            },
+            {
+                id: 53,
+                question: "The unary……operation always results in a relation that has exactly one more row than the original relation.",
+                options: [
+                    "Insert",
+                    "Delete",
+                    "Update",
+                    "Select"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "A (Insert)<br>✅ Giải thích: Toán tử Insert thêm một dòng mới vào bảng, làm tăng số lượng dòng lên một đơn vị.<br>💡 Mẹo: Nếu hỏi về toán tử làm tăng số dòng, chọn Insert."
+            },
+            {
+                id: 54,
+                question: "……is the process by which a given set of relations are transformed to a new set of relations with a more solid structure.",
+                options: [
+                    "Relational database",
+                    "Database system",
+                    "Atomic operations",
+                    "Normalization"
+                ],
+                correct: 3,
+                type: "single",
+                explanation: "D (Normalization)<br>✅ Giải thích: Chuẩn hóa (Normalization) giúp tổ chức lại dữ liệu để giảm dư thừa và tăng tính toàn vẹn.<br>💡 Mẹo: Nếu câu hỏi nói về \"biến đổi quan hệ thành cấu trúc tốt hơn\", chọn Normalization."
+            },
+            {
+                id: 55,
+                question: "Which of the following attacks is threatening integrity?",
+                options: [
+                    "Masquerading",
+                    "Traffic Analysis",
+                    "Denial of service",
+                    "Encoding"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "A (Masquerading)<br>✅ Giải thích: Masquerading là tấn công mạo danh, gây ảnh hưởng đến tính toàn vẹn (integrity) của dữ liệu.<br>💡 Mẹo: Nếu hỏi về mối đe dọa tính toàn vẹn (integrity), chọn Masquerading."
+            },
+            {
+                id: 56,
+                question: "Before transmission, the sender transforms the plaintext into the ciphertext—this is….",
+                options: [
+                    "Plain text",
+                    "Cipher text",
+                    "Encryption",
+                    "Decryption"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "C (Encryption)<br>✅ Giải thích: Mã hóa (Encryption) là quá trình chuyển plain text thành cipher text trước khi truyền.<br>💡 Mẹo: Nếu hỏi về quá trình biến dữ liệu thô thành mã hóa, chọn Encryption."
+            },
+            {
+                id: 57,
+                question: "The ethical principle that dictates that an act is ethical when a majority of people in society agrees with it is referred to as….",
+                options: [
+                    "Moral rules",
+                    "Utilization",
+                    "Social contract",
+                    "None of the others"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "C (Social contract)<br>✅ Giải thích: Social contract là nguyên tắc đạo đức dựa trên sự đồng thuận của số đông trong xã hội.<br>💡 Mẹo: Nếu câu hỏi đề cập đến \"majority of people in society agrees\", chọn Social contract."
+            },
+            {
+                id: 58,
+                question: "……who create algorithms to break existing internet networks so as to solve the loopholes in them.",
+                options: [
+                    "Black Hat Hacker",
+                    "Grey Hat Hacker",
+                    "White Hat Hacker",
+                    "Blue Hat Hacker"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "C (White Hat Hacker)<br>✅ Giải thích: White Hat Hacker là những hacker tốt, giúp tìm lỗi bảo mật để sửa chữa.<br>💡 Mẹo: Nếu hỏi về hacker giúp cải thiện an ninh mạng, chọn White Hat Hacker."
+            },
+            {
+                id: 59,
+                question: "In a stream cipher encryption and decryption are done one symbol. We have a plaintext stream, a ciphertext stream, and a …..",
+                options: [
+                    "Key block",
+                    "Single key",
+                    "Key stream",
+                    "Auto key"
+                ],
+                correct: 2,
+                type: "single",
+                explanation: "C (Key stream)<br>✅ Giải thích: Trong mã hóa dòng (Stream Cipher), một Key stream được sử dụng để mã hóa và giải mã dữ liệu.<br>💡 Mẹo: Nếu gặp \"Stream Cipher\", chọn Key stream."
+            },
+            {
+                id: 60,
+                question: "The RSA algorithm for confidentiality uses….. cryptography.",
+                options: [
+                    "Asymmetric-key",
+                    "Symmetric-key",
+                    "Substitution",
+                    "Transposition"
+                ],
+                correct: 0,
+                type: "single",
+                explanation: "A (Asymmetric-key)<br>✅ Giải thích: RSA sử dụng mã hóa khóa bất đối xứng (Asymmetric-key cryptography), với khóa công khai và khóa riêng.<br>💡 Mẹo: Nếu gặp \"RSA\", chọn Asymmetric-key."
+            }
+        ];
+
+        let userAnswers = {};
+        let showingAnswers = false;
+        let answeredQuestions = new Set(); // Add tracking
+
+        function initQuiz() {
+            // Tự động cập nhật tổng số câu hỏi
+            document.getElementById('totalQuestions').textContent = questions.length;
+            
+            renderAllQuestions();
+            updateScoreSummary();
+        }
+
+        function renderAllQuestions() {
+            const quizContent = document.getElementById('quizContent');
+            
+            quizContent.innerHTML = questions.map(question => `
+                <div class="question-item" id="question-${question.id}">
+                    <div class="question-header">
+                        <div class="question-number">Câu ${question.id}</div>
+                        <div class="question-status" id="status-${question.id}">❓</div>
+                    </div>
+                    
+                    <div class="question-text">${question.question}</div>
+                    
+                    <div class="options-container">
+                        ${question.options.map((option, index) => `
+                            <div class="option-item" onclick="selectOption(${question.id}, ${index})">
+                                ${question.type === 'multiple' ? 
+                                    `<input type="checkbox" class="option-checkbox" id="q${question.id}-opt${index}" onchange="selectOption(${question.id}, ${index})">` :
+                                    `<input type="radio" name="q${question.id}" class="option-radio" id="q${question.id}-opt${index}" onchange="selectOption(${question.id}, ${index})">`
+                                }
+                                <label class="option-text" for="q${question.id}-opt${index}">
+                                    ${String.fromCharCode(65 + index)}. ${option}
+                                </label>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="explanation" id="explanation-${question.id}">
+                        <h4><span class="icon">💡</span>Giải thích:</h4>
+                        <p>${question.explanation}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectOption(questionId, optionIndex) {
+            // Prevent changes if question already answered
+            if (answeredQuestions.has(questionId)) {
+                return;
+            }
+            
+            const question = questions.find(q => q.id === questionId);
+            const questionElement = document.getElementById(`question-${questionId}`);
+            const optionElement = document.getElementById(`q${questionId}-opt${optionIndex}`);
+            
+            if (showingAnswers) return;
+            
+            if (question.type === 'multiple') {
+                // Handle multiple choice
+                if (!userAnswers[questionId]) {
+                    userAnswers[questionId] = [];
+                }
+                
+                if (optionElement.checked) {
+                    if (!userAnswers[questionId].includes(optionIndex)) {
+                        userAnswers[questionId].push(optionIndex);
+                    }
+                } else {
+                    userAnswers[questionId] = userAnswers[questionId].filter(idx => idx !== optionIndex);
+                }
+                
+                // Check if user has selected the correct number of answers for multiple choice
+                const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
+                if (userAnswers[questionId] && userAnswers[questionId].length === correctAnswers.length) {
+                    answeredQuestions.add(questionId);
+                    disableQuestionOptions(questionId);
+                    showQuestionFeedback(questionId);
+                } else {
+                    hideQuestionFeedback(questionId);
+                }
+            } else {
+                // Handle single choice - lock immediately
+                userAnswers[questionId] = optionIndex;
+                answeredQuestions.add(questionId);
+                disableQuestionOptions(questionId);
+                showQuestionFeedback(questionId);
+            }
+            
+            updateQuestionStatus(questionId);
+            updateScoreSummary();
+        }
+
+        function disableQuestionOptions(questionId) {
+            const optionElements = document.querySelectorAll(`[id^="q${questionId}-opt"]`);
+            optionElements.forEach(element => {
+                element.disabled = true;
+                element.parentElement.style.pointerEvents = 'none';
+                element.parentElement.style.opacity = '0.7';
+            });
+        }
+
+        function showQuestionFeedback(questionId) {
+            const question = questions.find(q => q.id === questionId);
+            const explanationElement = document.getElementById(`explanation-${questionId}`);
+            const isCorrect = checkAnswer(questionId);
+            
+            // Show explanation
+            explanationElement.classList.add('show');
+            
+            // Update option styling to show correct/incorrect
+            const optionElements = document.querySelectorAll(`[id^="q${questionId}-opt"]`);
+            optionElements.forEach((element, index) => {
+                const optionContainer = element.parentElement;
+                optionContainer.classList.remove('correct', 'incorrect', 'user-selected', 'user-incorrect');
+                
+                // Remove existing indicators
+                const existingIndicator = optionContainer.querySelector('.answer-indicator');
+                if (existingIndicator) {
+                    existingIndicator.remove();
+                }
+                
+                const userAnswer = userAnswers[questionId];
+                const isUserSelection = question.type === 'multiple' ? 
+                    (userAnswer && userAnswer.includes(index)) : 
+                    (userAnswer === index);
+                
+                if (question.type === 'multiple') {
+                    const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
+                    
+                    if (correctAnswers.includes(index)) {
+                        // This is a correct answer
+                        optionContainer.classList.add('correct');
+                        const indicator = document.createElement('span');
+                        indicator.className = 'answer-indicator correct-indicator';
+                        indicator.textContent = isUserSelection ? '✓ Đúng' : '✓ Đáp án đúng';
+                        optionContainer.appendChild(indicator);
+                    } else if (isUserSelection) {
+                        // User selected wrong answer
+                        optionContainer.classList.add('user-incorrect');
+                        const indicator = document.createElement('span');
+                        indicator.className = 'answer-indicator incorrect-indicator';
+                        indicator.textContent = '✗ Sai';
+                        optionContainer.appendChild(indicator);
+                    }
+                } else {
+                    if (index === question.correct) {
+                        // This is the correct answer
+                        optionContainer.classList.add('correct');
+                        const indicator = document.createElement('span');
+                        indicator.className = 'answer-indicator correct-indicator';
+                        indicator.textContent = isUserSelection ? '✓ Đúng' : '✓ Đáp án đúng';
+                        optionContainer.appendChild(indicator);
+                    } else if (isUserSelection) {
+                        // User selected wrong answer
+                        optionContainer.classList.add('user-incorrect');
+                        const indicator = document.createElement('span');
+                        indicator.className = 'answer-indicator incorrect-indicator';
+                        indicator.textContent = '✗ Sai';
+                        optionContainer.appendChild(indicator);
+                    }
+                }
+            });
+        }
+
+        function hideQuestionFeedback(questionId) {
+            const explanationElement = document.getElementById(`explanation-${questionId}`);
+            explanationElement.classList.remove('show');
+            
+            // Remove feedback styling from options
+            const optionElements = document.querySelectorAll(`[id^="q${questionId}-opt"]`);
+            optionElements.forEach((element, index) => {
+                const optionContainer = element.parentElement;
+                optionContainer.classList.remove('correct', 'incorrect', 'user-selected', 'user-incorrect');
+                
+                // Remove existing indicators
+                const existingIndicator = optionContainer.querySelector('.answer-indicator');
+                if (existingIndicator) {
+                    existingIndicator.remove();
+                }
+            });
+        }
+
+        function updateQuestionStatus(questionId) {
+            const question = questions.find(q => q.id === questionId);
+            const statusElement = document.getElementById(`status-${questionId}`);
+            const questionElement = document.getElementById(`question-${questionId}`);
+            
+            // Check if question is properly answered
+            let isAnswered = false;
+            if (question.type === 'multiple') {
+                const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
+                isAnswered = userAnswers[questionId] && userAnswers[questionId].length === correctAnswers.length;
+            } else {
+                isAnswered = userAnswers[questionId] !== undefined;
+            }
+            
+            if (isAnswered) {
+                if (showingAnswers || hasQuestionFeedback(questionId)) {
+                    const isCorrect = checkAnswer(questionId);
+                    statusElement.textContent = isCorrect ? '✅' : '❌';
+                    questionElement.className = `question-item ${isCorrect ? 'answered' : 'incorrect'}`;
+                } else {
+                    statusElement.textContent = '✏️';
+                    questionElement.className = 'question-item answered';
+                }
+            } else {
+                statusElement.textContent = '❓';
+                questionElement.className = 'question-item';
+            }
+        }
+
+        function hasQuestionFeedback(questionId) {
+            const explanationElement = document.getElementById(`explanation-${questionId}`);
+            return explanationElement.classList.contains('show');
+        }
+
+        function checkAnswer(questionId) {
+            const question = questions.find(q => q.id === questionId);
+            const userAnswer = userAnswers[questionId];
+            
+            if (question.type === 'multiple') {
+                if (!userAnswer || userAnswer.length === 0) return false;
+                const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
+                return userAnswer.length === correctAnswers.length && 
+                       userAnswer.every(ans => correctAnswers.includes(ans));
+            } else {
+                return userAnswer === question.correct;
+            }
+        }
+
+        function updateScoreSummary() {
+            const answeredCount = Object.keys(userAnswers).filter(qId => {
+                const question = questions.find(q => q.id == qId);
+                const answer = userAnswers[qId];
+                return answer !== undefined && 
+                       (question.type === 'single' || (question.type === 'multiple' && answer.length > 0));
+            }).length;
+            
+            let correctCount = 0;
+            answeredQuestions.forEach(qId => {
+                if (checkAnswer(parseInt(qId))) {
+                    correctCount++;
+                }
+            });
+
+            const totalQuestions = questions.length;
+            const percentage = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
+            
+            document.getElementById('answeredCount').textContent = answeredQuestions.size;
+            document.getElementById('correctCount').textContent = correctCount;
+            document.getElementById('scorePercentage').textContent = percentage + '%';
+        }
+
+        function showAllAnswers() {
+            showingAnswers = true;
+            
+            questions.forEach(question => {
+                const explanationElement = document.getElementById(`explanation-${question.id}`);
+                explanationElement.classList.add('show');
+                
+                // Highlight correct answers only
+                const optionElements = document.querySelectorAll(`[id^="q${question.id}-opt"]`);
+                optionElements.forEach((element, index) => {
+                    const optionContainer = element.parentElement;
+                    optionContainer.classList.remove('correct', 'incorrect', 'selected', 'user-selected', 'user-incorrect');
+                    
+                    // Remove existing indicators
+                    const existingIndicator = optionContainer.querySelector('.answer-indicator');
+                    if (existingIndicator) {
+                        existingIndicator.remove();
+                    }
+                    
+                    if (question.type === 'multiple') {
+                        const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
+                        if (correctAnswers.includes(index)) {
+                            optionContainer.classList.add('correct');
+                            const indicator = document.createElement('span');
+                            indicator.className = 'answer-indicator correct-indicator';
+                            indicator.textContent = '✓ Đúng';
+                            optionContainer.appendChild(indicator);
+                        }
+                    } else {
+                        if (index === question.correct) {
+                            optionContainer.classList.add('correct');
+                            const indicator = document.createElement('span');
+                            indicator.className = 'answer-indicator correct-indicator';
+                            indicator.textContent = '✓ Đáp án đúng';
+                            optionContainer.appendChild(indicator);
+                        }
+                    }
+                    
+                    // Disable further interactions
+                    element.disabled = true;
+                    element.parentElement.style.pointerEvents = 'none';
+                });
+                
+                updateQuestionStatus(question.id);
+            });
+        }
+
+        function checkAllAnswers() {
+            showingAnswers = true;
+            
+            questions.forEach(question => {
+                // Mark all as answered to show feedback
+                answeredQuestions.add(question.id);
+
+                const explanationElement = document.getElementById(`explanation-${question.id}`);
+                explanationElement.classList.add('show');
+                
+                // Show user answers vs correct answers
+                const optionElements = document.querySelectorAll(`[id^="q${question.id}-opt"]`);
+                optionElements.forEach((element, index) => {
+                    const optionContainer = element.parentElement;
+                    optionContainer.classList.remove('correct', 'incorrect', 'selected', 'user-selected', 'user-incorrect');
+                    
+                    // Remove existing indicators
+                    const existingIndicator = optionContainer.querySelector('.answer-indicator');
+                    if (existingIndicator) {
+                        existingIndicator.remove();
+                    }
+                    
+                    const userAnswer = userAnswers[question.id];
+                    const isUserSelection = question.type === 'multiple' ? 
+                        (userAnswer && userAnswer.includes(index)) : 
+                        (userAnswer === index);
+                    
+                    if (question.type === 'multiple') {
+                        const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
+                        
+                        if (correctAnswers.includes(index)) {
+                            // This is a correct answer
+                            optionContainer.classList.add('correct');
+                            const indicator = document.createElement('span');
+                            indicator.className = 'answer-indicator correct-indicator';
+                            indicator.textContent = isUserSelection ? '✓ Đúng - Bạn đã chọn' : '✓ Đáp án đúng';
+                            optionContainer.appendChild(indicator);
+                        } else if (isUserSelection) {
+                            // User selected wrong answer
+                            optionContainer.classList.add('user-incorrect');
+                            const indicator = document.createElement('span');
+                            indicator.className = 'answer-indicator incorrect-indicator';
+                            indicator.textContent = '✗ Sai - Bạn đã chọn';
+                            optionContainer.appendChild(indicator);
+                        }
+                    } else {
+                        if (index === question.correct) {
+                            // This is the correct answer
+                            optionContainer.classList.add('correct');
+                            const indicator = document.createElement('span');
+                            indicator.className = 'answer-indicator correct-indicator';
+                            indicator.textContent = isUserSelection ? '✓ Đúng - Bạn đã chọn' : '✓ Đáp án đúng';
+                            optionContainer.appendChild(indicator);
+                        } else if (isUserSelection) {
+                            // User selected wrong answer
+                            optionContainer.classList.add('user-incorrect');
+                            const indicator = document.createElement('span');
+                            indicator.className = 'answer-indicator incorrect-indicator';
+                            indicator.textContent = '✗ Sai - Bạn đã chọn';
+                            optionContainer.appendChild(indicator);
+                        }
+                    }
+                    
+                    // Disable further interactions
+                    element.disabled = true;
+                    element.parentElement.style.pointerEvents = 'none';
+                });
+                
+                updateQuestionStatus(question.id);
+            });
+            
+            updateScoreSummary();
+        }
+
+        function resetQuiz() {
+            userAnswers = {};
+            showingAnswers = false;
+            answeredQuestions.clear();
+            
+            // Reset all form elements
+            document.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(input => {
+                input.checked = false;
+                input.disabled = false;
+                input.parentElement.style.pointerEvents = 'auto';
+                input.parentElement.style.opacity = '1';
+            });
+            
+            // Hide all explanations and feedback
+            questions.forEach(question => {
+                hideQuestionFeedback(question.id);
+            });
+            
+            // Reset all option styling and remove indicators
+            document.querySelectorAll('.option-item').forEach(option => {
+                option.classList.remove('correct', 'incorrect', 'selected', 'user-selected', 'user-incorrect');
+                const indicator = option.querySelector('.answer-indicator');
+                if (indicator) {
+                    indicator.remove();
+                }
+            });
+            
+            // Update all question statuses
+            questions.forEach(question => {
+                updateQuestionStatus(question.id);
+            });
+            
+            updateScoreSummary();
+        }
+
+        // Initialize quiz when page loads
+        document.addEventListener('DOMContentLoaded', initQuiz);
+    </script>
+</body>
+</html>
